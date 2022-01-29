@@ -13,9 +13,19 @@
 
 #include "less.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define caseless				(less_ctx->pub.__caseless)
+#	define is_caseless			(less_ctx->pub.__is_caseless)
+#	define utf_mode				(less_ctx->pub.__utf_mode)
+#else
 extern int caseless;
 extern int is_caseless;
 extern int utf_mode;
+#endif
 
 /*
  * Compile a search pattern, for future use by match_pattern.

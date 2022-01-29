@@ -18,6 +18,54 @@
 #include <windows.h>
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define every_first_cmd		(less_ctx->pub.__every_first_cmd)
+#	define new_file				(less_ctx->pub.__new_file)
+#	define is_tty				(less_ctx->pub.__is_tty)
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#	define old_ifile			(less_ctx->pub.__old_ifile)
+#	define initial_scrpos		(less_ctx->pub.__initial_scrpos)
+#	define start_attnpos		(less_ctx->pub.__start_attnpos)
+#	define end_attnpos			(less_ctx->pub.__end_attnpos)
+#	define wscroll				(less_ctx->pub.__wscroll)
+#	define progname				(less_ctx->pub.__progname)
+#	define quitting				(less_ctx->pub.__quitting)
+#	define secure				(less_ctx->pub.__secure)
+#	define dohelp				(less_ctx->pub.__dohelp)
+#if LOGFILE
+#	define logfile				(less_ctx->pub.__logfile)
+#	define force_logfile		(less_ctx->pub.__force_logfile)
+#	define namelogfile			(less_ctx->pub.__namelogfile)
+#endif
+#if EDITOR
+#	define editor				(less_ctx->pub.__editor)
+#	define editproto			(less_ctx->pub.__editproto)
+#endif
+#if TAGS
+#	define tags					(less_ctx->pub.__tags)
+#	define tagoption			(less_ctx->pub.__tagoption)
+#	define jump_sline			(less_ctx->pub.__jump_sline)
+#endif
+#	define one_screen			(less_ctx->pub.__one_screen)
+#	define less_is_more			(less_ctx->pub.__less_is_more)
+#	define missing_cap			(less_ctx->pub.__missing_cap)
+#	define know_dumb			(less_ctx->pub.__know_dumb)
+#	define pr_type				(less_ctx->pub.__pr_type)
+#	define quit_if_one_screen	(less_ctx->pub.__quit_if_one_screen)
+#	define no_init				(less_ctx->pub.__no_init)
+#	define errmsgs				(less_ctx->pub.__errmsgs)
+#	define redraw_on_quit		(less_ctx->pub.__redraw_on_quit)
+#	define term_init_done		(less_ctx->pub.__term_init_done)
+#	define first_time			(less_ctx->pub.__first_time)
+
+#ifdef WIN32
+#	define consoleTitle			(less_ctx->__main.__consoleTitle)
+#endif
+#else
 public char *   every_first_cmd = NULL;
 public int      new_file;
 public int      is_tty;
@@ -64,6 +112,7 @@ extern int      errmsgs;
 extern int      redraw_on_quit;
 extern int      term_init_done;
 extern int      first_time;
+#endif
 
 /*
  * Entry point.
@@ -73,6 +122,12 @@ main(argc, argv)
 	int argc;
 	char *argv[];
 {
+#ifdef __VSF__
+	if (vsf_linux_less_init() < 0) {
+		fprintf(stderr, "fail to initialize less\n");
+		return -1;
+	}
+#endif
 	IFILE ifile;
 	char *s;
 
@@ -397,7 +452,11 @@ sprefix(ps, s, uppercase)
 quit(status)
 	int status;
 {
+#ifdef __VSF__
+#	define save_status			(less_ctx->__main.quit.__save_status)
+#else
 	static int save_status;
+#endif
 
 	/*
 	 * Put cursor at bottom left corner, clear the line,
@@ -407,6 +466,10 @@ quit(status)
 		status = save_status;
 	else
 		save_status = status;
+#ifdef __VSF__
+#	undef save_status
+#endif
+
 #if LESSTEST
 	rstat('Q');
 #endif /*LESSTEST*/

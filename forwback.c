@@ -16,6 +16,41 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define squished				(less_ctx->pub.__squished)
+#	define no_back_scroll		(less_ctx->pub.__no_back_scroll)
+#	define forw_prompt			(less_ctx->pub.__forw_prompt)
+#	define first_time			(less_ctx->pub.__first_time)
+
+#	define sigs					(less_ctx->pub.__sigs)
+#	define top_scroll			(less_ctx->pub.__top_scroll)
+#	define quiet				(less_ctx->pub.__quiet)
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define hshift				(less_ctx->pub.__hshift)
+#	define auto_wrap			(less_ctx->pub.__auto_wrap)
+#	define plusoption			(less_ctx->pub.__plusoption)
+#	define forw_scroll			(less_ctx->pub.__forw_scroll)
+#	define back_scroll			(less_ctx->pub.__back_scroll)
+#	define ignore_eoi			(less_ctx->pub.__ignore_eoi)
+#	define clear_bg				(less_ctx->pub.__clear_bg)
+#	define final_attr			(less_ctx->pub.__final_attr)
+#	define header_lines			(less_ctx->pub.__header_lines)
+#	define header_cols			(less_ctx->pub.__header_cols)
+#if HILITE_SEARCH
+#	define size_linebuf			(less_ctx->pub.__size_linebuf)
+#	define hilite_search		(less_ctx->pub.__hilite_search)
+#	define status_col			(less_ctx->pub.__status_col)
+#endif
+#if TAGS
+#	define tagoption			(less_ctx->pub.__tagoption)
+#endif
+#else
 public int screen_trashed;
 public int squished;
 public int no_back_scroll = 0;
@@ -44,6 +79,7 @@ extern int status_col;
 #if TAGS
 extern char *tagoption;
 #endif
+#endif
 
 /*
  * Sound the bell to indicate user is trying to move past end of file.
@@ -52,11 +88,18 @@ extern char *tagoption;
 eof_bell(VOID_PARAM)
 {
 #if HAVE_TIME
+#ifdef __VSF__
+#	define last_eof_bell		(less_ctx->forwback.eof_bell.__last_eof_bell)
+#else
 	static time_type last_eof_bell = 0;
+#endif
 	time_type now = get_time();
 	if (now == last_eof_bell) /* max once per second */
 		return;
 	last_eof_bell = now;
+#ifdef __VSF__
+#	undef last_eof_bell
+#endif
 #endif
 	if (quiet == NOT_QUIET)
 		bell();

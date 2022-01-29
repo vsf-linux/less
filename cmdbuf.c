@@ -20,6 +20,25 @@
 #include <sys/stat.h>
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define utf_mode				(less_ctx->pub.__utf_mode)
+#	define no_hist_dups			(less_ctx->pub.__no_hist_dups)
+#	define marks_modified		(less_ctx->pub.__marks_modified)
+#	define secure				(less_ctx->pub.__secure)
+#	define updown_match			(less_ctx->pub.__updown_match)
+
+#	define cmdbuf				(less_ctx->__cmdbuf.__cmdbuf)
+#	define cmd_col				(less_ctx->__cmdbuf.__cmd_col)
+#	define prompt_col			(less_ctx->__cmdbuf.__prompt_col)
+#	define cp					(less_ctx->__cmdbuf.__cp)
+#	define cmd_offset			(less_ctx->__cmdbuf.__cmd_offset)
+#	define literal				(less_ctx->__cmdbuf.__literal)
+#else
 extern int sc_width;
 extern int utf_mode;
 extern int no_hist_dups;
@@ -33,12 +52,21 @@ static char *cp;                 /* Pointer into cmdbuf */
 static int cmd_offset;           /* Index into cmdbuf of first displayed char */
 static int literal;              /* Next input char should not be interpreted */
 public int updown_match = -1;    /* Prefix length in up/down movement */
+#endif
 
 #if TAB_COMPLETE_FILENAME
 static int cmd_complete LESSPARAMS((int action));
 /*
  * These variables are statics used by cmd_complete.
  */
+#ifdef __VSF__
+#	define in_completion		(less_ctx->__cmdbuf.__in_completion)
+#	define tk_text				(less_ctx->__cmdbuf.__tk_text)
+#	define tk_original			(less_ctx->__cmdbuf.__tk_original)
+#	define tk_ipoint			(less_ctx->__cmdbuf.__tk_ipoint)
+#	define tk_trial				(less_ctx->__cmdbuf.__tk_trial)
+#	define tk_tlist				(less_ctx->__cmdbuf.__tk_tlist)
+#else
 static int in_completion = 0;
 static char *tk_text;
 static char *tk_original;
@@ -46,13 +74,19 @@ static char *tk_ipoint;
 static char *tk_trial = NULL;
 static struct textlist tk_tlist;
 #endif
+#endif
 
 static int cmd_left();
 static int cmd_right();
 
 #if SPACES_IN_FILENAMES
+#ifdef __VSF__
+#	define openquote			(less_ctx->pub.__openquote)
+#	define closequote			(less_ctx->pub.__closequote)
+#else
 public char openquote = '"';
 public char closequote = '"';
+#endif
 #endif
 
 #if CMD_HISTORY
@@ -63,6 +97,16 @@ public char closequote = '"';
 #define HISTFILE_SHELL_SECTION   ".shell"
 #define HISTFILE_MARK_SECTION    ".mark"
 
+#ifdef __VSF__
+#	define ml_search			(less_ctx->pub.__ml_search)
+#	define mlist_search			(less_ctx->__cmdbuf.__mlist_search)
+#	define ml_examine			(less_ctx->pub.__ml_examine)
+#	define mlist_examine		(less_ctx->__cmdbuf.__mlist_examine)
+#if SHELL_ESCAPE || PIPEC
+#	define ml_shell				(less_ctx->pub.__ml_shell)
+#	define mlist_shell			(less_ctx->__cmdbuf.__mlist_shell)
+#endif
+#else
 /*
  * A mlist structure represents a command history.
  */
@@ -91,14 +135,22 @@ struct mlist mlist_shell =
 	{ &mlist_shell,   &mlist_shell,   &mlist_shell,   NULL, 0 };
 public void *ml_shell = (void *) &mlist_shell;
 #endif
+#endif
 
 #else /* CMD_HISTORY */
 
 /* If CMD_HISTORY is off, these are just flags. */
+#ifdef __VSF__
+#	define ml_search			(less_ctx->pub.__ml_search)
+#	define ml_examine			(less_ctx->pub.__ml_examine)
+#if SHELL_ESCAPE || PIPEC
+#	define ml_shell				(less_ctx->pub.__ml_shell)
+#endif
 public void *ml_search = (void *)1;
 public void *ml_examine = (void *)2;
 #if SHELL_ESCAPE || PIPEC
 public void *ml_shell = (void *)3;
+#endif
 #endif
 
 #endif /* CMD_HISTORY */
@@ -106,12 +158,20 @@ public void *ml_shell = (void *)3;
 /*
  * History for the current command.
  */
+#ifdef __VSF__
+#	define curr_mlist			(less_ctx->__cmdbuf.__curr_mlist)
+#	define curr_cmdflags		(less_ctx->__cmdbuf.__curr_cmdflags)
+#	define cmd_mbc_buf			(less_ctx->__cmdbuf.__cmd_mbc_buf)
+#	define cmd_mbc_buf_len		(less_ctx->__cmdbuf.__cmd_mbc_buf_len)
+#	define cmd_mbc_buf_index	(less_ctx->__cmdbuf.__cmd_mbc_buf_index)
+#else
 static struct mlist *curr_mlist = NULL;
 static int curr_cmdflags;
 
 static char cmd_mbc_buf[MAX_UTF_CHAR_LEN];
 static int cmd_mbc_buf_len;
 static int cmd_mbc_buf_index;
+#endif
 
 
 /*

@@ -21,11 +21,24 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define table				(less_ctx->position.__table)
+#	define table_size			(less_ctx->position.__table_size)
+
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define header_lines			(less_ctx->pub.__header_lines)
+#else
 static POSITION *table = NULL;  /* The position table */
 static int table_size = 0;
 
 extern int sc_width, sc_height;
 extern int header_lines;
+#endif
 
 /*
  * Return the starting file position of a line displayed on the screen.

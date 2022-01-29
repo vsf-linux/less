@@ -33,11 +33,25 @@
 #include "cmd.h"
 #include "lesskey.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define erase_char			(less_ctx->pub.__erase_char)
+#	define erase2_char			(less_ctx->pub.__erase2_char)
+#	define kill_char			(less_ctx->pub.__kill_char)
+#	define secure				(less_ctx->pub.__secure)
+#	define mousecap				(less_ctx->pub.__mousecap)
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#else
 extern int erase_char, erase2_char, kill_char;
 extern int secure;
 extern int mousecap;
 extern int screen_trashed;
 extern int sc_height;
+#endif
 
 #define SK(k) \
 	SK_SPECIAL_KEY, (k), 6, 1, 1, 1
@@ -46,6 +60,10 @@ extern int sc_height;
  * frequency of use, so the common commands are near the beginning.
  */
 
+#ifdef __VSF__
+#	define cmdtable				(less_ctx->decode.__cmdtable)
+#	define edittable			(less_ctx->decode.__edittable)
+#else
 static unsigned char cmdtable[] =
 {
 	'\r',0,                         A_F_LINE,
@@ -219,7 +237,14 @@ static unsigned char edittable[] =
 	ESC,'[','M',0,                  EC_X11MOUSE,    /* X11 mouse report */
 	ESC,'[','<',0,                  EC_X116MOUSE,   /* X11 1006 mouse report */
 };
+#endif
 
+#ifdef __VSF__
+#	define list_fcmd_tables		(less_ctx->decode.__list_fcmd_tables)
+#	define list_ecmd_tables		(less_ctx->decode.__list_ecmd_tables)
+#	define list_var_tables		(less_ctx->decode.__list_var_tables)
+#	define list_sysvar_tables	(less_ctx->decode.__list_sysvar_tables)
+#else
 /*
  * Structure to support a list of command tables.
  */
@@ -237,6 +262,7 @@ static struct tablelist *list_fcmd_tables = NULL;
 static struct tablelist *list_ecmd_tables = NULL;
 static struct tablelist *list_var_tables = NULL;
 static struct tablelist *list_sysvar_tables = NULL;
+#endif
 
 
 /*
@@ -912,7 +938,11 @@ lesskey_src(filename, sysvar)
 	char *filename;
 	int sysvar;
 {
+#ifdef __VSF__
+#	define tables				(less_ctx->decode.lesskey_src.__tables)
+#else
 	static struct lesskey_tables tables;
+#endif
 	int r = parse_lesskey(filename, &tables);
 	if (r != 0)
 		return (r);
@@ -921,6 +951,9 @@ lesskey_src(filename, sysvar)
 	add_var_table(sysvar ? &list_sysvar_tables : &list_var_tables,
 		tables.vartable.buf.data, tables.vartable.buf.end);
 	return (0);
+#ifdef __VSF__
+#	undef tables
+#endif
 }
 
 	void

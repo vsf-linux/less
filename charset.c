@@ -27,10 +27,22 @@
 #include <windows.h>
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define bs_mode				(less_ctx->pub.__bs_mode)
+#	define utf_mode				(less_ctx->pub.__utf_mode)
+#else
 extern int bs_mode;
 
 public int utf_mode = 0;
+#endif
 
+#ifdef __VSF__
+#	define charsets				(less_ctx->charset.__charsets)
+#else
 /*
  * Predefined character sets,
  * selected by the LESSCHARSET environment variable.
@@ -62,6 +74,7 @@ struct charset {
 		{ "IBM-1047",           NULL,       "4cbcbc3b9cbccbccbb4c6bcc5b3cbbc4bc4bccbc191.b" },
 		{ NULL, NULL, NULL }
 };
+#endif
 
 /*
  * Support "locale charmap"/nl_langinfo(CODESET) values, as well as others.
@@ -118,10 +131,18 @@ struct cs_alias {
 #define IS_BINARY_CHAR  01
 #define IS_CONTROL_CHAR 02
 
+#ifdef __VSF__
+#	define chardef				(less_ctx->charset.__chardef)
+#	define binfmt				(less_ctx->charset.__binfmt)
+#	define utfbinfmt			(less_ctx->charset.__utfbinfmt)
+
+#	define binattr				(less_ctx->pub.__binattr)
+#else
 static char chardef[256];
 static char *binfmt = NULL;
 static char *utfbinfmt = NULL;
 public int binattr = AT_STANDOUT|AT_COLOR_BIN;
+#endif
 
 
 /*
@@ -445,7 +466,11 @@ prchar(c)
 	LWCHAR c;
 {
 	/* {{ This buffer can be overrun if LESSBINFMT is a long string. }} */
+#ifdef __VSF__
+#	define buf					(less_ctx->charset.prchar.__buf)
+#else
 	static char buf[MAX_PRCHAR_LEN+1];
+#endif
 
 	c &= 0377;
 	if ((c < 128 || !utf_mode) && !control_char(c))
@@ -471,6 +496,9 @@ prchar(c)
 	else
 		SNPRINTF1(buf, sizeof(buf), binfmt, c);
 	return (buf);
+#ifdef __VSF__
+#	undef buf
+#endif
 }
 
 /*
@@ -480,7 +508,11 @@ prchar(c)
 prutfchar(ch)
 	LWCHAR ch;
 {
+#ifdef __VSF__
+#	define buf					(less_ctx->charset.prutfchar.__buf)
+#else
 	static char buf[MAX_PRCHAR_LEN+1];
+#endif
 
 	if (ch == ESC)
 		strcpy(buf, "ESC");
@@ -502,6 +534,9 @@ prutfchar(ch)
 		*p = '\0';
 	}
 	return (buf);
+#ifdef __VSF__
+#	undef buf
+#endif
 }
 
 /*
@@ -732,9 +767,9 @@ step_char(pp, dir, limit)
  */
 
 #define DECLARE_RANGE_TABLE_START(name) \
-	static struct wchar_range name##_array[] = {
+	static const struct wchar_range name##_array[] = {
 #define DECLARE_RANGE_TABLE_END(name) \
-	}; struct wchar_range_table name##_table = { name##_array, sizeof(name##_array)/sizeof(*name##_array) };
+	}; const struct wchar_range_table name##_table = { name##_array, sizeof(name##_array)/sizeof(*name##_array) };
 
 DECLARE_RANGE_TABLE_START(compose)
 #include "compose.uni"
@@ -753,7 +788,7 @@ DECLARE_RANGE_TABLE_START(fmt)
 DECLARE_RANGE_TABLE_END(fmt)
 
 /* comb_table is special pairs, not ranges. */
-static struct wchar_range comb_table[] = {
+static const struct wchar_range comb_table[] = {
 	{0x0644,0x0622}, {0x0644,0x0623}, {0x0644,0x0625}, {0x0644,0x0627},
 };
 

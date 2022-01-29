@@ -45,6 +45,10 @@
 #include <poll.h>
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
 /*
  * BSD setjmp() saves (and longjmp() restores) the signal mask.
  * This costs a system call or two per setjmp(), so if possible we clear the
@@ -60,6 +64,17 @@
 #define LONG_JUMP       longjmp
 #endif
 
+#ifdef __VSF__
+#	define reading				(less_ctx->pub.__reading)
+#	define consecutive_nulls	(less_ctx->pub.__consecutive_nulls)
+#	define sigs					(less_ctx->pub.__sigs)
+#	define ignore_eoi			(less_ctx->pub.__ignore_eoi)
+#if !MSDOS_COMPILER
+#	define tty					(less_ctx->pub.__tty)
+#endif
+
+#	define read_label			(less_ctx->os.__read_label)
+#else
 public int reading;
 public int consecutive_nulls = 0;
 
@@ -69,6 +84,7 @@ extern int sigs;
 extern int ignore_eoi;
 #if !MSDOS_COMPILER
 extern int tty;
+#endif
 #endif
 
 #if USE_POLL
@@ -265,7 +281,11 @@ get_time(VOID_PARAM)
 strerror(err)
 	int err;
 {
+#ifdef __VSF__
+#	define buf					(less_ctx->os.strerror.__buf)
+#else
 	static char buf[INT_STRLEN_BOUND(int)+12];
+#endif
 #if HAVE_SYS_ERRLIST
 	extern char *sys_errlist[];
 	extern int sys_nerr;
@@ -275,6 +295,9 @@ strerror(err)
 #endif
 	sprintf(buf, "Error %d", err);
 	return buf;
+#ifdef __VSF__
+#	undef buf
+#endif
 }
 #endif
 

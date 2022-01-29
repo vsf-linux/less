@@ -14,7 +14,15 @@
 #include "less.h"
 #include "charset.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define utf_mode				(less_ctx->pub.__utf_mode)
+#else
 extern int utf_mode;
+#endif
 
 /*
  * Get the length of a buffer needed to convert a string.

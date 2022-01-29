@@ -15,6 +15,10 @@
 #include "xbuf.h"
 #include "defines.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
 #define CONTROL(c)      ((c)&037)
 #define ESC             CONTROL('[')
 
@@ -24,12 +28,19 @@ extern void *ecalloc(int count, unsigned int size);
 extern int lstrtoi(char *str, char **end);
 extern char version[];
 
+#ifdef __VSF__
+#	define linenum			(less_ctx->lesskey_parser.__linenum)
+#	define errors			(less_ctx->lesskey_parser.__errors)
+#	define less_version		(less_ctx->lesskey_parser.__less_version)
+#	define lesskey_file		(less_ctx->lesskey_parser.__lesskey_file)
+#else
 static int linenum;
 static int errors;
 static int less_version = 0;
 static char *lesskey_file;
+#endif
 
-static struct lesskey_cmdname cmdnames[] = 
+static const struct lesskey_cmdname cmdnames[] = 
 {
 	{ "back-bracket",         A_B_BRACKET },
 	{ "back-line",            A_B_LINE },
@@ -98,7 +109,7 @@ static struct lesskey_cmdname cmdnames[] =
 	{ NULL,   0 }
 };
 
-static struct lesskey_cmdname editnames[] = 
+static const struct lesskey_cmdname editnames[] = 
 {
 	{ "back-complete",      EC_B_COMPLETE },
 	{ "backspace",          EC_BACKSPACE },
@@ -203,9 +214,14 @@ tstr(pp, xlate)
 	char *p;
 	char ch;
 	int i;
+#ifdef __VSF__
+#	define buf				(less_ctx->lesskey_parser.tstr.__buf)
+#	define tstr_control_k	(less_ctx->lesskey_parser.tstr.__tstr_control_k)
+#else
 	static char buf[CHAR_STRING_LEN];
 	static char tstr_control_k[] =
 		{ SK_SPECIAL_KEY, SK_CONTROL_K, 6, 1, 1, 1, '\0' };
+#endif
 
 	p = *pp;
 	switch (*p)
@@ -307,6 +323,10 @@ tstr(pp, xlate)
 	if (xlate && buf[0] == CONTROL('K'))
 		return tstr_control_k;
 	return (buf);
+#ifdef __VSF__
+#	undef buf
+#	undef tstr_control_k
+#endif
 }
 
 	static int

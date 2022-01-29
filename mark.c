@@ -11,6 +11,16 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define jump_sline			(less_ctx->pub.__jump_sline)
+#	define perma_marks			(less_ctx->pub.__perma_marks)
+#else
 extern IFILE curr_ifile;
 extern int sc_height;
 extern int jump_sline;
@@ -32,6 +42,7 @@ struct mark
 	char *m_filename;        /* Name of the input file */
 	struct scrpos m_scrpos;  /* Position of the mark */
 };
+#endif
 
 /*
  * The table of marks.
@@ -42,8 +53,14 @@ struct mark
 #define NUMARKS         ((2*26)+1)      /* user marks (not lastmark) */
 #define MOUSEMARK       (NMARKS-2)
 #define LASTMARK        (NMARKS-1)
+
+#ifdef __VSF__
+#	define marks				(less_ctx->mark.__marks)
+#	define marks_modified		(less_ctx->pub.__marks_modified)
+#else
 static struct mark marks[NMARKS];
 public int marks_modified = 0;
+#endif
 
 
 /*
@@ -143,7 +160,11 @@ getmark(c)
 	int c;
 {
 	struct mark *m;
+#ifdef __VSF__
+#	define sm					(less_ctx->mark.getmark.__sm)
+#else
 	static struct mark sm;
+#endif
 
 	switch (c)
 	{
@@ -195,6 +216,9 @@ getmark(c)
 		break;
 	}
 	return (m);
+#ifdef __VSF__
+#	undef sm
+#endif
 }
 
 /*

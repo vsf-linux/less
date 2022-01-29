@@ -39,6 +39,10 @@
 #endif
 #include "regexp.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
 /*
  * The "internal use only" fields in regexp.h are present to pass info from
  * compile to execute that permits the execute phase to run lots faster on
@@ -158,11 +162,19 @@
 /*
  * Global work variables for regcomp().
  */
+#ifdef __VSF__
+#	define regparse				(less_ctx->regexp.__regparse)
+#	define regnpar				(less_ctx->regexp.__regnpar)
+#	define regdummy				(less_ctx->regexp.__regdummy)
+#	define regcode				(less_ctx->regexp.__regcode)
+#	define regsize				(less_ctx->regexp.__regsize)
+#else
 static char *regparse;		/* Input-scan pointer. */
 static int regnpar;		/* () count. */
 static char regdummy;
 static char *regcode;		/* Code-emit pointer; &regdummy = don't. */
 static long regsize;		/* Code size. */
+#endif
 
 /*
  * The first byte of the regexp internal "program" is actually this magic
@@ -701,10 +713,17 @@ char *val;
 /*
  * Global work variables for regexec().
  */
+#ifdef __VSF__
+#	define reginput				(less_ctx->regexp.__reginput)
+#	define regbol				(less_ctx->regexp.__regbol)
+#	define regstartp			(less_ctx->regexp.__regstartp)
+#	define regendp				(less_ctx->regexp.__regendp)
+#else
 static char *reginput;		/* String-input pointer. */
 static char *regbol;		/* Beginning of input, for ^ check. */
 static char **regstartp;	/* Pointer to startp array. */
 static char **regendp;		/* Ditto for endp. */
+#endif
 
 /*
  * Forwards.

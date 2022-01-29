@@ -21,8 +21,17 @@
 
 #include "less.h"
 
-extern IFILE    curr_ifile;
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
 
+#ifdef __VSF__
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#else
+extern IFILE    curr_ifile;
+#endif
+
+#ifndef __VSF__
 struct ifile {
 	struct ifile *h_next;           /* Links for command line list */
 	struct ifile *h_prev;
@@ -36,6 +45,7 @@ struct ifile {
 	void *h_altpipe;                /* Alt pipe */
 	char *h_altfilename;            /* Alt filename */
 };
+#endif
 
 /*
  * Convert an IFILE (external representation)
@@ -44,12 +54,17 @@ struct ifile {
 #define int_ifile(h)    ((struct ifile *)(h))
 #define ext_ifile(h)    ((IFILE)(h))
 
+#ifdef __VSF__
+#	define anchor				(less_ctx->ifile.__anchor)
+#	define ifiles				(less_ctx->ifile.__ifiles)
+#else
 /*
  * Anchor for linked list.
  */
 static struct ifile anchor = { &anchor, &anchor, NULL, NULL, NULL, 0, 0, '\0',
 				{ NULL_POSITION, 0 } };
 static int ifiles = 0;
+#endif
 
 	static void
 incr_index(p, incr)

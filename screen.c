@@ -87,6 +87,10 @@ extern int fd0;
 
 #endif /* MSDOS_COMPILER */
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
 /*
  * Check for broken termios package that forces you to manually
  * set the line discipline.
@@ -186,6 +190,34 @@ public int vt_enabled = -1;     /* Is virtual terminal processing available? */
 /*
  * Strings passed to tputs() to do various terminal functions.
  */
+#ifdef __VSF__
+#	define sc_pad				(less_ctx->screen.__sc_pad)
+#	define sc_home				(less_ctx->screen.__sc_home)
+#	define sc_addline			(less_ctx->screen.__sc_addline)
+#	define sc_lower_left		(less_ctx->screen.__sc_lower_left)
+#	define sc_return			(less_ctx->screen.__sc_return)
+#	define sc_move				(less_ctx->screen.__sc_move)
+#	define sc_clear				(less_ctx->screen.__sc_clear)
+#	define sc_eol_clear			(less_ctx->screen.__sc_eol_clear)
+#	define sc_eos_clear			(less_ctx->screen.__sc_eos_clear)
+#	define sc_s_in				(less_ctx->screen.__sc_s_in)
+#	define sc_s_out				(less_ctx->screen.__sc_s_out)
+#	define sc_u_in				(less_ctx->screen.__sc_u_in)
+#	define sc_u_out				(less_ctx->screen.__sc_u_out)
+#	define sc_b_in				(less_ctx->screen.__sc_b_in)
+#	define sc_b_out				(less_ctx->screen.__sc_b_out)
+#	define sc_bl_in				(less_ctx->screen.__sc_bl_in)
+#	define sc_bl_out			(less_ctx->screen.__sc_bl_out)
+#	define sc_visual_bell		(less_ctx->screen.__sc_visual_bell)
+#	define sc_backspace			(less_ctx->screen.__sc_backspace)
+#	define sc_s_keypad			(less_ctx->screen.__sc_s_keypad)
+#	define sc_e_keypad			(less_ctx->screen.__sc_e_keypad)
+#	define sc_s_mousecap		(less_ctx->screen.__sc_s_mousecap)
+#	define sc_e_mousecap		(less_ctx->screen.__sc_e_mousecap)
+#	define sc_init				(less_ctx->screen.__sc_init)
+#	define sc_deinit			(less_ctx->screen.__sc_deinit)
+#	define attrcolor			(less_ctx->screen.__attrcolor)
+#else
 static char
 	*sc_pad,                /* Pad string */
 	*sc_home,               /* Cursor home */
@@ -215,7 +247,42 @@ static char
 
 static int attrcolor = -1;
 #endif
+#endif
 
+#ifdef __VSF__
+#	define init_done			(less_ctx->screen.__init_done)
+#	define attrmode				(less_ctx->screen.__attrmode)
+#	define termcap_debug		(less_ctx->screen.__termcap_debug)
+
+#	define auto_wrap			(less_ctx->pub.__auto_wrap)
+#	define ignaw				(less_ctx->pub.__ignaw)
+#	define erase_char			(less_ctx->pub.__erase_char)
+#	define erase2_char			(less_ctx->pub.__erase2_char)
+#	define kill_char			(less_ctx->pub.__kill_char)
+#	define werase_char			(less_ctx->pub.__werase_char)
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define bo_s_width			(less_ctx->pub.__bo_s_width)
+#	define bo_e_width			(less_ctx->pub.__bo_e_width)
+#	define ul_s_width			(less_ctx->pub.__ul_s_width)
+#	define ul_e_width			(less_ctx->pub.__ul_e_width)
+#	define so_s_width			(less_ctx->pub.__so_s_width)
+#	define so_e_width			(less_ctx->pub.__so_e_width)
+#	define bl_s_width			(less_ctx->pub.__bl_s_width)
+#	define bl_e_width			(less_ctx->pub.__bl_e_width)
+#	define above_mem			(less_ctx->pub.__above_mem)
+#	define below_mem			(less_ctx->pub.__below_mem)
+#	define can_goto_line		(less_ctx->pub.__can_goto_line)
+#	define clear_bg				(less_ctx->pub.__clear_bg)
+#	define missing_cap			(less_ctx->pub.__missing_cap)
+#	define kent					(less_ctx->pub.__kent)
+#	define term_init_done		(less_ctx->pub.__term_init_done)
+#	define binattr				(less_ctx->pub.__binattr)
+#	define one_screen			(less_ctx->pub.__one_screen)
+#if LESSTEST
+#	define ttyin_name			(less_ctx->pub.__ttyin_name)
+#endif
+#else
 static int init_done = 0;
 
 public int auto_wrap;           /* Terminal does \r\n when write past margin */
@@ -243,6 +310,7 @@ extern int one_screen;
 #if LESSTEST
 extern char *ttyin_name;
 #endif /*LESSTEST*/
+#endif
 
 #if !MSDOS_COMPILER
 static char *cheaper LESSPARAMS((char *t1, char *t2, char *def));
@@ -263,6 +331,26 @@ short ospeed;
 char PC_, *UP, *BC;
 #endif
 
+#ifdef __VSF__
+#	define quiet				(less_ctx->pub.__quiet)
+#	define no_back_scroll		(less_ctx->pub.__no_back_scroll)
+#	define swindow				(less_ctx->pub.__swindow)
+#	define no_init				(less_ctx->pub.__no_init)
+#	define no_keypad			(less_ctx->pub.__no_keypad)
+#	define sigs					(less_ctx->pub.__sigs)
+#	define wscroll				(less_ctx->pub.__wscroll)
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define top_scroll			(less_ctx->pub.__top_scroll)
+#	define quit_if_one_screen	(less_ctx->pub.__quit_if_one_screen)
+#	define oldbot				(less_ctx->pub.__oldbot)
+#	define mousecap				(less_ctx->pub.__mousecap)
+#	define is_tty				(less_ctx->pub.__is_tty)
+#	define use_color			(less_ctx->pub.__use_color)
+#if HILITE_SEARCH
+#	define hilite_search		(less_ctx->pub.__hilite_search)
+#endif
+#	define tty					(less_ctx->pub.__tty)
+#else
 extern int quiet;               /* If VERY_QUIET, use visual bell for bell */
 extern int no_back_scroll;
 extern int swindow;
@@ -290,6 +378,7 @@ extern DWORD console_mode;
 #else
 extern int tty;
 #endif
+#endif
 
 extern char *tgetstr();
 extern char *tgoto();
@@ -310,7 +399,11 @@ extern char *tgoto();
 raw_mode(on)
 	int on;
 {
+#ifdef __VSF__
+#	define curr_on				(less_ctx->screen.raw_mode.__curr_on)
+#else
 	static int curr_on = 0;
+#endif
 
 	if (on == curr_on)
 			return;
@@ -663,13 +756,20 @@ raw_mode(on)
 #endif
 #endif
 	curr_on = on;
+#ifdef __VSF__
+#	undef curr_on
+#endif
 }
 
 #if !MSDOS_COMPILER
 /*
  * Some glue to prevent calling termcap functions if tgetent() failed.
  */
+#ifdef __VSF__
+#	define hardcopy				(less_ctx->screen.__hardcopy)
+#else
 static int hardcopy;
+#endif
 
 	static char *
 ltget_env(capname)
@@ -679,8 +779,12 @@ ltget_env(capname)
 
 	if (termcap_debug)
 	{
+#ifdef __VSF__
+#	define envs					(less_ctx->screen.ltget_env.__envs)
+#else
 		struct env { struct env *next; char *name; char *value; };
 		static struct env *envs = NULL;
+#endif
 		struct env *p;
 		for (p = envs;  p != NULL;  p = p->next)
 			if (strcmp(p->name, capname) == 0)
@@ -692,6 +796,9 @@ ltget_env(capname)
 		p->next = envs;
 		envs = p;
 		return p->value;
+#ifdef __VSF__
+#	undef envs
+#endif
 	}
 	SNPRINTF1(name, sizeof(name), "LESS_TERMCAP_%s", capname);
 	return (lgetenv(name));
@@ -920,7 +1027,11 @@ delay(msec)
 special_key_str(key)
 	int key;
 {
+#ifdef __VSF__
+#	define tbuf					(less_ctx->screen.special_key_str.__tbuf)
+#else
 	static char tbuf[40];
+#endif
 	char *s;
 #if MSDOS_COMPILER || OS2
 	static char k_right[]           = { '\340', PCK_RIGHT, 0 };
@@ -1093,6 +1204,9 @@ special_key_str(key)
 		return (NULL);
 	}
 	return (s);
+#ifdef __VSF__
+#	undef tbuf
+#endif
 }
 
 /*
@@ -1171,8 +1285,13 @@ get_term(VOID_PARAM)
 	 * Some termcap libraries assume termbuf is static
 	 * (accessible after tgetent returns).
 	 */
+#ifdef __VSF__
+#	define termbuf				(less_ctx->screen.get_term.__termbuf)
+#	define sbuf					(less_ctx->screen.get_term.__sbuf)
+#else
 	static char termbuf[TERMBUF_SIZE];
 	static char sbuf[TERMSBUF_SIZE];
+#endif
 
 #if OS2
 	/*
@@ -1394,6 +1513,10 @@ get_term(VOID_PARAM)
 		 */
 		no_back_scroll = 1;
 	}
+#ifdef __VSF__
+#	undef termbuf
+#	undef sbuf
+#endif
 }
 #endif /* MSDOS_COMPILER */
 }
@@ -1406,7 +1529,11 @@ get_term(VOID_PARAM)
  * This tells us how many chars would be printed by using this string.
  * {{ Couldn't we just use strlen? }}
  */
+#ifdef __VSF__
+#	define costcount			(less_ctx->screen.__costcount)
+#else
 static int costcount;
+#endif
 
 /*ARGSUSED*/
 	static int

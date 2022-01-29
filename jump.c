@@ -15,12 +15,26 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define jump_sline			(less_ctx->pub.__jump_sline)
+#	define squished				(less_ctx->pub.__squished)
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define show_attn			(less_ctx->pub.__show_attn)
+#	define top_scroll			(less_ctx->pub.__top_scroll)
+#else
 extern int jump_sline;
 extern int squished;
 extern int screen_trashed;
 extern int sc_width, sc_height;
 extern int show_attn;
 extern int top_scroll;
+#endif
 
 /*
  * Jump to the end of the file.

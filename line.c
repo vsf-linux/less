@@ -22,6 +22,44 @@
 #include <windows.h>
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define linebuf				(less_ctx->line.__linebuf)
+#	define shifted_ansi			(less_ctx->line.__shifted_ansi)
+#	define last_ansi			(less_ctx->line.__last_ansi)
+#	define last_ansis			(less_ctx->line.__last_ansis)
+#	define curr_last_ansi		(less_ctx->line.__curr_last_ansi)
+#	define line_ansi			(less_ctx->line.__line_ansi)
+#	define ansi_in_line			(less_ctx->line.__ansi_in_line)
+#	define hlink_in_line		(less_ctx->line.__hlink_in_line)
+#	define line_mark_attr		(less_ctx->line.__line_mark_attr)
+#	define cshift				(less_ctx->line.__cshift)
+#	define end_column			(less_ctx->line.__end_column)
+#	define right_curr			(less_ctx->line.__right_curr)
+#	define right_column			(less_ctx->line.__right_column)
+#	define overstrike			(less_ctx->line.__overstrike)
+#	define last_overstrike		(less_ctx->line.__last_overstrike)
+#	define is_null_line			(less_ctx->line.__is_null_line)
+#	define pendc				(less_ctx->line.__pendc)
+#	define pendpos				(less_ctx->line.__pendpos)
+#	define end_ansi_chars		(less_ctx->line.__end_ansi_chars)
+#	define mid_ansi_chars		(less_ctx->line.__mid_ansi_chars)
+#	define in_hilite			(less_ctx->line.__in_hilite)
+#	define mbc_buf				(less_ctx->line.__mbc_buf)
+#	define mbc_buf_len			(less_ctx->line.__mbc_buf_len)
+#	define mbc_buf_index		(less_ctx->line.__mbc_buf_index)
+#	define mbc_pos				(less_ctx->line.__mbc_pos)
+
+#	define size_linebuf			(less_ctx->pub.__size_linebuf)
+#	define hshift				(less_ctx->pub.__hshift)
+#	define tabstops				(less_ctx->pub.__tabstops)
+#	define ntabstops			(less_ctx->pub.__ntabstops)
+#	define tabdefault			(less_ctx->pub.__tabdefault)
+#	define highest_hilite		(less_ctx->pub.__highest_hilite)
+#else
 #define MAX_PFX_WIDTH (MAX_LINENUM_WIDTH + MAX_STATUSCOL_WIDTH + 1)
 static struct {
 	char *buf;    /* Buffer which holds the current output line */
@@ -73,11 +111,42 @@ static POSITION pendpos;
 static char *end_ansi_chars;
 static char *mid_ansi_chars;
 static int in_hilite;
+#endif
 
 static int attr_swidth LESSPARAMS ((int a));
 static int attr_ewidth LESSPARAMS ((int a));
 static int do_append LESSPARAMS ((LWCHAR ch, char *rep, POSITION pos));
 
+#ifdef __VSF__
+#	define sigs					(less_ctx->pub.__sigs)
+#	define bs_mode				(less_ctx->pub.__bs_mode)
+#	define linenums				(less_ctx->pub.__linenums)
+#	define ctldisp				(less_ctx->pub.__ctldisp)
+#	define twiddle				(less_ctx->pub.__twiddle)
+#	define binattr				(less_ctx->pub.__binattr)
+#	define status_col			(less_ctx->pub.__status_col)
+#	define status_col_width		(less_ctx->pub.__status_col_width)
+#	define linenum_width		(less_ctx->pub.__linenum_width)
+#	define auto_wrap			(less_ctx->pub.__auto_wrap)
+#	define ignaw				(less_ctx->pub.__ignaw)
+#	define bo_s_width			(less_ctx->pub.__bo_s_width)
+#	define bo_e_width			(less_ctx->pub.__bo_e_width)
+#	define ul_s_width			(less_ctx->pub.__ul_s_width)
+#	define ul_e_width			(less_ctx->pub.__ul_e_width)
+#	define bl_s_width			(less_ctx->pub.__bl_s_width)
+#	define bl_e_width			(less_ctx->pub.__bl_e_width)
+#	define so_s_width			(less_ctx->pub.__so_s_width)
+#	define so_e_width			(less_ctx->pub.__so_e_width)
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define utf_mode				(less_ctx->pub.__utf_mode)
+#	define start_attnpos		(less_ctx->pub.__start_attnpos)
+#	define end_attnpos			(less_ctx->pub.__end_attnpos)
+#	define rscroll_char			(less_ctx->pub.__rscroll_char)
+#	define rscroll_attr			(less_ctx->pub.__rscroll_attr)
+#	define use_color			(less_ctx->pub.__use_color)
+#	define status_line			(less_ctx->pub.__status_line)
+#else
 extern int sigs;
 extern int bs_mode;
 extern int linenums;
@@ -100,14 +169,22 @@ extern char rscroll_char;
 extern int rscroll_attr;
 extern int use_color;
 extern int status_line;
+#endif
 
+#ifdef __VSF__
+#	define mbc_buf				(less_ctx->line.__mbc_buf)
+#	define mbc_buf_len			(less_ctx->line.__mbc_buf_len)
+#	define mbc_buf_index		(less_ctx->line.__mbc_buf_index)
+#	define mbc_pos				(less_ctx->line.__mbc_pos)
+#else
 static char mbc_buf[MAX_UTF_CHAR_LEN];
 static int mbc_buf_len = 0;
 static int mbc_buf_index = 0;
 static POSITION mbc_pos;
+#endif
 
 /* Configurable color map */
-static char color_map[AT_NUM_COLORS][12] = {
+static const char color_map[AT_NUM_COLORS][12] = {
 	"Wm",  /* AT_COLOR_ATTN */
 	"kR",  /* AT_COLOR_BIN */
 	"kR",  /* AT_COLOR_CTRL */
@@ -640,7 +717,11 @@ ansi_step(pansi, ch)
 	}
 	if (pansi->hindex >= 0)
 	{
+#ifdef __VSF__
+#	define hlink_prefix		(less_ctx->line.ansi_step.__hlink_prefix)
+#else
 		static char hlink_prefix[] = ESCS "]8;";
+#endif
 		if (ch == hlink_prefix[pansi->hindex] ||
 		    (pansi->hindex == 0 && IS_CSI_START(ch)))
 		{
@@ -650,6 +731,9 @@ ansi_step(pansi, ch)
 			return ANSI_MID;
 		}
 		pansi->hindex = -1; /* not a hyperlink */
+#ifdef __VSF__
+#	undef hlink_prefix
+#endif
 	}
 	/* Check for SGR sequences */
 	if (is_ansi_middle(ch))

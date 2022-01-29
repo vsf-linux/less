@@ -947,4 +947,4 @@ v599  12/28/21  Defer moving to lower left in some cases;
 v600  1/7/22    Use /dev/tty if cannot open ttyname().
 */
 
-char version[] = "600";
+const char version[] = "600";

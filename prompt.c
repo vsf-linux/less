@@ -20,6 +20,28 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define pr_type				(less_ctx->pub.__pr_type)
+#	define new_file				(less_ctx->pub.__new_file)
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define so_s_width			(less_ctx->pub.__so_s_width)
+#	define so_e_width			(less_ctx->pub.__so_e_width)
+#	define linenums				(less_ctx->pub.__linenums)
+#	define hshift				(less_ctx->pub.__hshift)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define jump_sline			(less_ctx->pub.__jump_sline)
+#	define less_is_more			(less_ctx->pub.__less_is_more)
+#	define header_lines			(less_ctx->pub.__header_lines)
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#if EDITOR
+#	define editor				(less_ctx->pub.__editor)
+#	define editproto			(less_ctx->pub.__editproto)
+#endif
+#else
 extern int pr_type;
 extern int new_file;
 extern int sc_width;
@@ -35,6 +57,7 @@ extern IFILE curr_ifile;
 extern char *editor;
 extern char *editproto;
 #endif
+#endif
 
 /*
  * Prototypes for the three flavors of prompts.
@@ -46,15 +69,24 @@ static constant char m_proto[] =
   "?n?f%f .?m(%T %i of %m) ..?e(END) ?x- Next\\: %x.:?pB%pB\\%:byte %bB?s/%s...%t";
 static constant char M_proto[] =
   "?f%f .?n?m(%T %i of %m) ..?ltlines %lt-%lb?L/%L. :byte %bB?s/%s. .?e(END) ?x- Next\\: %x.:?pB%pB\\%..%t";
-static constant char e_proto[] =
+constant char e_proto[] =
   "?f%f .?m(%T %i of %m) .?ltlines %lt-%lb?L/%L. .byte %bB?s/%s. ?e(END) :?pB%pB\\%..%t";
-static constant char h_proto[] =
+constant char h_proto[] =
   "HELP -- ?eEND -- Press g to see it again:Press RETURN for more., or q when done";
-static constant char w_proto[] =
+constant char w_proto[] =
   "Waiting for data";
 static constant char more_proto[] =
   "--More--(?eEND ?x- Next\\: %x.:?pB%pB\\%:byte %bB?s/%s...%t)";
 
+#ifdef __VSF__
+#	define prproto				(less_ctx->pub.__prproto)
+#	define eqproto				(less_ctx->pub.__eqproto)
+#	define hproto				(less_ctx->pub.__hproto)
+#	define wproto				(less_ctx->pub.__wproto)
+
+#	define message				(less_ctx->prompt.__message)
+#	define mp					(less_ctx->prompt.__mp)
+#else
 public char *prproto[3];
 public char constant *eqproto = e_proto;
 public char constant *hproto = h_proto;
@@ -62,6 +94,7 @@ public char constant *wproto = w_proto;
 
 static char message[PROMPT_SIZE];
 static char *mp;
+#endif
 
 /*
  * Initialize the prompt prototype strings.

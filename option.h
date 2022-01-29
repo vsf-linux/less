@@ -45,6 +45,7 @@
 /* Error code from findopt_name */
 #define OPT_AMBIG       1
 
+#ifndef __VSF__
 struct optname
 {
         char *oname;            /* Long (GNU-style) option name */
@@ -63,4 +64,4 @@ struct loption
         void (*ofunc) LESSPARAMS ((int, char*)); /* Pointer to special handling function */
         char *odesc[3];         /* Description of each value */
 };
-
+#endif

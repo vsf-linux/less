@@ -34,6 +34,11 @@
 
 #include "less.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifndef __VSF__
 /*
  * Structure to keep track of a line number and the associated file position.
  * A doubly-linked circular list of line numbers is kept ordered by line number.
@@ -46,6 +51,7 @@ struct linenum_info
 	POSITION gap;                   /* Gap between prev and next */
 	LINENUM line;                   /* Line number */
 };
+#endif
 /*
  * "gap" needs some explanation: the gap of any particular line number
  * is the distance between the previous one and the next one in the list.
@@ -59,6 +65,19 @@ struct linenum_info
 
 #define LONGTIME        (2)             /* In seconds */
 
+#ifdef __VSF__
+#	define anchor				(less_ctx->linenum.__anchor)
+#	define freelist				(less_ctx->linenum.__freelist)
+#	define pool					(less_ctx->linenum.__pool)
+#	define spare				(less_ctx->linenum.__spare)
+
+#	define linenums				(less_ctx->pub.__linenums)
+#	define sigs					(less_ctx->pub.__sigs)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define header_lines			(less_ctx->pub.__header_lines)
+#	define nonum_headers		(less_ctx->pub.__nonum_headers)
+#else
 static struct linenum_info anchor;      /* Anchor of the list */
 static struct linenum_info *freelist;   /* Anchor of the unused entries */
 static struct linenum_info pool[NPOOL]; /* The pool itself */
@@ -70,6 +89,7 @@ extern int sc_height;
 extern int screen_trashed;
 extern int header_lines;
 extern int nonum_headers;
+#endif
 
 /*
  * Initialize the line number structures.
@@ -216,9 +236,16 @@ longloopmessage(VOID_PARAM)
 	ierror("Calculating line numbers", NULL_PARG);
 }
 
+#ifdef __VSF__
+#	define loopcount			(less_ctx->linenum.__loopcount)
+#if HAVE_TIME
+#	define startime				(less_ctx->linenum.__startime)
+#endif
+#else
 static int loopcount;
 #if HAVE_TIME
 static time_type startime;
+#endif
 #endif
 
 	static void

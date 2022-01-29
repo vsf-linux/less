@@ -17,6 +17,39 @@
 #include <signal.h>
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define fd0					(less_ctx->pub.__fd0)
+#	define new_file				(less_ctx->pub.__new_file)
+#	define cbufs				(less_ctx->pub.__cbufs)
+#	define every_first_cmd		(less_ctx->pub.__every_first_cmd)
+#	define force_open			(less_ctx->pub.__force_open)
+#	define is_tty				(less_ctx->pub.__is_tty)
+#	define sigs					(less_ctx->pub.__sigs)
+#	define hshift				(less_ctx->pub.__hshift)
+#	define want_filesize		(less_ctx->pub.__want_filesize)
+#	define consecutive_nulls	(less_ctx->pub.__consecutive_nulls)
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#	define old_ifile			(less_ctx->pub.__old_ifile)
+#	define initial_scrpos		(less_ctx->pub.__initial_scrpos)
+#	define ml_examine			(less_ctx->pub.__ml_examine)
+#if SPACES_IN_FILENAMES
+#	define openquote			(less_ctx->pub.__openquote)
+#	define closequote			(less_ctx->pub.__closequote)
+#endif
+#if LOGFILE
+#	define logfile				(less_ctx->pub.__logfile)
+#	define force_logfile		(less_ctx->pub.__force_logfile)
+#	define namelogfile			(less_ctx->pub.__namelogfile)
+#endif
+#if HAVE_STAT_INO
+#	define curr_dev				(less_ctx->pub.__curr_dev)
+#	define curr_ino				(less_ctx->pub.__curr_ino)
+#endif
+#else
 public int fd0 = 0;
 
 extern int new_file;
@@ -46,6 +79,7 @@ extern char *namelogfile;
 #if HAVE_STAT_INO
 public dev_t curr_dev;
 public ino_t curr_ino;
+#endif
 #endif
 
 /*

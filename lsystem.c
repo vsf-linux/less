@@ -32,8 +32,17 @@
 #endif
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#else
 extern int screen_trashed;
 extern IFILE curr_ifile;
+#endif
 
 
 #if HAVE_SYSTEM

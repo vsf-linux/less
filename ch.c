@@ -30,9 +30,17 @@ extern ino_t curr_ino;
 #include <sys/statfs.h>
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
 typedef POSITION BLOCKNUM;
 
+#ifdef __VSF__
+#	define ignore_eoi			(less_ctx->pub.__ignore_eoi)
+#else
 public int ignore_eoi;
+#endif
 
 /*
  * Pool of buffers holding the most recently used blocks of the input file.
@@ -124,6 +132,22 @@ struct filestate {
 	thisfile->hashtbl[h].hnext->hprev = (bn); \
 	thisfile->hashtbl[h].hnext = (bn);
 
+#ifdef __VSF__
+#	define thisfile				(less_ctx->ch.__thisfile)
+#	define ch_ungotchar			(less_ctx->ch.__ch_ungotchar)
+#	define maxbufs				(less_ctx->ch.__maxbufs)
+
+#	define autobuf				(less_ctx->pub.__autobuf)
+#	define sigs					(less_ctx->pub.__sigs)
+#	define secure				(less_ctx->pub.__secure)
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define follow_mode			(less_ctx->pub.__follow_mode)
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#if LOGFILE
+#	define logfile				(less_ctx->pub.__logfile)
+#	define namelogfile			(less_ctx->pub.__namelogfile)
+#endif
+#else
 static struct filestate *thisfile;
 static int ch_ungotchar = -1;
 static int maxbufs = -1;
@@ -133,13 +157,15 @@ extern int sigs;
 extern int secure;
 extern int screen_trashed;
 extern int follow_mode;
-extern constant char helpdata[];
-extern constant int size_helpdata;
 extern IFILE curr_ifile;
 #if LOGFILE
 extern int logfile;
 extern char *namelogfile;
 #endif
+#endif
+
+extern constant char helpdata[];
+extern constant int size_helpdata;
 
 static int ch_addbuf();
 
@@ -392,7 +418,11 @@ ch_ungetchar(c)
 	public void
 end_logfile(VOID_PARAM)
 {
+#ifdef __VSF__
+#	define tried				(less_ctx->ch.end_logfile.__tried)
+#else
 	static int tried = FALSE;
+#endif
 
 	if (logfile < 0)
 		return;
@@ -408,6 +438,9 @@ end_logfile(VOID_PARAM)
 	logfile = -1;
 	free(namelogfile);
 	namelogfile = NULL;
+#ifdef __VSF__
+#	undef tried
+#endif
 }
 
 /*

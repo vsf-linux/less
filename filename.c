@@ -43,6 +43,23 @@
 #endif
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define force_open			(less_ctx->pub.__force_open)
+#	define secure				(less_ctx->pub.__secure)
+#	define use_lessopen			(less_ctx->pub.__use_lessopen)
+#	define ctldisp				(less_ctx->pub.__ctldisp)
+#	define utf_mode				(less_ctx->pub.__utf_mode)
+#	define curr_ifile			(less_ctx->pub.__curr_ifile)
+#	define old_ifile			(less_ctx->pub.__old_ifile)
+#if SPACES_IN_FILENAMES
+#	define openquote			(less_ctx->pub.__openquote)
+#	define closequote			(less_ctx->pub.__closequote)
+#endif
+#else
 extern int force_open;
 extern int secure;
 extern int use_lessopen;
@@ -53,6 +70,7 @@ extern IFILE old_ifile;
 #if SPACES_IN_FILENAMES
 extern char openquote;
 extern char closequote;
+#endif
 #endif
 
 /*
@@ -114,7 +132,11 @@ get_meta_escape(VOID_PARAM)
 	static char *
 metachars(VOID_PARAM)
 {
+#ifdef __VSF__
+#	define mchars				(less_ctx->filename.metachars.__mchars)
+#else
 	static char *mchars = NULL;
+#endif
 
 	if (mchars == NULL)
 	{
@@ -123,6 +145,9 @@ metachars(VOID_PARAM)
 			mchars = DEF_METACHARS;
 	}
 	return (mchars);
+#ifdef __VSF__
+#	undef mchars
+#endif
 }
 
 /*
@@ -1041,7 +1066,7 @@ bad_file(filename)
 
 	if (!force_open && is_dir(filename))
 	{
-		static char is_a_dir[] = " is a directory";
+		static const char is_a_dir[] = " is a directory";
 
 		m = (char *) ecalloc(strlen(filename) + sizeof(is_a_dir), 
 			sizeof(char));
@@ -1062,7 +1087,7 @@ bad_file(filename)
 			m = NULL;
 		} else if (!S_ISREG(statbuf.st_mode))
 		{
-			static char not_reg[] = " is not a regular file (use -f to see it)";
+			static const char not_reg[] = " is not a regular file (use -f to see it)";
 			m = (char *) ecalloc(strlen(filename) + sizeof(not_reg),
 				sizeof(char));
 			strcpy(m, filename);

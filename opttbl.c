@@ -15,6 +15,67 @@
 #include "less.h"
 #include "option.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define quiet				(less_ctx->pub.__quiet)
+#	define how_search			(less_ctx->pub.__how_search)
+#	define top_scroll			(less_ctx->pub.__top_scroll)
+#	define pr_type				(less_ctx->pub.__pr_type)
+#	define bs_mode				(less_ctx->pub.__bs_mode)
+#	define know_dumb			(less_ctx->pub.__know_dumb)
+#	define quit_at_eof			(less_ctx->pub.__quit_at_eof)
+#	define quit_if_one_screen	(less_ctx->pub.__quit_if_one_screen)
+#	define squeeze				(less_ctx->pub.__squeeze)
+#	define tabstop				(less_ctx->pub.__tabstop)
+#	define back_scroll			(less_ctx->pub.__back_scroll)
+#	define forw_scroll			(less_ctx->pub.__forw_scroll)
+#	define caseless				(less_ctx->pub.__caseless)
+#	define linenums				(less_ctx->pub.__linenums)
+#	define autobuf				(less_ctx->pub.__autobuf)
+#	define bufspace				(less_ctx->pub.__bufspace)
+#	define ctldisp				(less_ctx->pub.__ctldisp)
+#	define force_open			(less_ctx->pub.__force_open)
+#	define swindow				(less_ctx->pub.__swindow)
+#	define jump_sline			(less_ctx->pub.__jump_sline)
+#	define jump_sline_fraction	(less_ctx->pub.__jump_sline_fraction)
+#	define shift_count_fraction	(less_ctx->pub.__shift_count_fraction)
+#	define chopline				(less_ctx->pub.__chopline)
+#	define no_init				(less_ctx->pub.__no_init)
+#	define no_keypad			(less_ctx->pub.__no_keypad)
+#	define twiddle				(less_ctx->pub.__twiddle)
+#	define show_attn			(less_ctx->pub.__show_attn)
+#	define shift_count			(less_ctx->pub.__shift_count)
+#	define status_col			(less_ctx->pub.__status_col)
+#	define use_lessopen			(less_ctx->pub.__use_lessopen)
+#	define quit_on_intr			(less_ctx->pub.__quit_on_intr)
+#	define follow_mode			(less_ctx->pub.__follow_mode))
+#	define oldbot				(less_ctx->pub.__oldbot)
+#	define opt_use_backslash	(less_ctx->pub.__opt_use_backslash)
+#	define rscroll_char			(less_ctx->pub.__rscroll_char)
+#	define rscroll_attr			(less_ctx->pub.__rscroll_attr)
+#	define no_hist_dups			(less_ctx->pub.__no_hist_dups)
+#	define mousecap				(less_ctx->pub.__mousecap)
+#	define wheel_lines			(less_ctx->pub.__wheel_lines)
+#	define perma_marks			(less_ctx->pub.__perma_marks)
+#	define linenum_width		(less_ctx->pub.__linenum_width)
+#	define status_col_width		(less_ctx->pub.__status_col_width)
+#	define incr_search			(less_ctx->pub.__incr_search)
+#	define use_color			(less_ctx->pub.__use_color)
+#	define want_filesize		(less_ctx->pub.__want_filesize)
+#	define status_line			(less_ctx->pub.__status_line)
+#	define header_lines			(less_ctx->pub.__header_lines)
+#	define header_cols			(less_ctx->pub.__header_cols)
+#	define nonum_headers		(less_ctx->pub.__nonum_headers)
+#	define redraw_on_quit		(less_ctx->pub.__redraw_on_quit)
+#	define def_search_type		(less_ctx->pub.__def_search_type)
+#if HILITE_SEARCH
+#	define hilite_search		(less_ctx->pub.__hilite_search)
+#endif
+#	define less_is_more			(less_ctx->pub.__less_is_more)
+#else
 /*
  * Variables controlled by command line options.
  */
@@ -75,84 +136,85 @@ public int hilite_search;       /* Highlight matched search patterns? */
 #endif
 
 public int less_is_more = 0;    /* Make compatible with POSIX more */
+#endif
 
 /*
  * Long option names.
  */
-static struct optname a_optname      = { "search-skip-screen",   NULL };
-static struct optname b_optname      = { "buffers",              NULL };
-static struct optname B__optname     = { "auto-buffers",         NULL };
-static struct optname c_optname      = { "clear-screen",         NULL };
-static struct optname d_optname      = { "dumb",                 NULL };
-static struct optname D__optname     = { "color",                NULL };
-static struct optname e_optname      = { "quit-at-eof",          NULL };
-static struct optname f_optname      = { "force",                NULL };
-static struct optname F__optname     = { "quit-if-one-screen",   NULL };
+const struct optname a_optname      = { "search-skip-screen",   NULL };
+const struct optname b_optname      = { "buffers",              NULL };
+const struct optname B__optname     = { "auto-buffers",         NULL };
+const struct optname c_optname      = { "clear-screen",         NULL };
+const struct optname d_optname      = { "dumb",                 NULL };
+const struct optname D__optname     = { "color",                NULL };
+const struct optname e_optname      = { "quit-at-eof",          NULL };
+const struct optname f_optname      = { "force",                NULL };
+const struct optname F__optname     = { "quit-if-one-screen",   NULL };
 #if HILITE_SEARCH
-static struct optname g_optname      = { "hilite-search",        NULL };
+const struct optname g_optname      = { "hilite-search",        NULL };
 #endif
-static struct optname h_optname      = { "max-back-scroll",      NULL };
-static struct optname i_optname      = { "ignore-case",          NULL };
-static struct optname j_optname      = { "jump-target",          NULL };
-static struct optname J__optname     = { "status-column",        NULL };
+const struct optname h_optname      = { "max-back-scroll",      NULL };
+const struct optname i_optname      = { "ignore-case",          NULL };
+const struct optname j_optname      = { "jump-target",          NULL };
+const struct optname J__optname     = { "status-column",        NULL };
 #if USERFILE
-static struct optname k_optname      = { "lesskey-file",         NULL };
+const struct optname k_optname      = { "lesskey-file",         NULL };
 #if HAVE_LESSKEYSRC 
-static struct optname ks_optname     = { "lesskey-src",          NULL };
+const struct optname ks_optname     = { "lesskey-src",          NULL };
 #endif /* HAVE_LESSKEYSRC */
 #endif
-static struct optname K__optname     = { "quit-on-intr",         NULL };
-static struct optname L__optname     = { "no-lessopen",          NULL };
-static struct optname m_optname      = { "long-prompt",          NULL };
-static struct optname n_optname      = { "line-numbers",         NULL };
+const struct optname K__optname     = { "quit-on-intr",         NULL };
+const struct optname L__optname     = { "no-lessopen",          NULL };
+const struct optname m_optname      = { "long-prompt",          NULL };
+const struct optname n_optname      = { "line-numbers",         NULL };
 #if LOGFILE
-static struct optname o_optname      = { "log-file",             NULL };
-static struct optname O__optname     = { "LOG-FILE",             NULL };
+const struct optname o_optname      = { "log-file",             NULL };
+const struct optname O__optname     = { "LOG-FILE",             NULL };
 #endif
-static struct optname p_optname      = { "pattern",              NULL };
-static struct optname P__optname     = { "prompt",               NULL };
-static struct optname q2_optname     = { "silent",               NULL };
-static struct optname q_optname      = { "quiet",                &q2_optname };
-static struct optname r_optname      = { "raw-control-chars",    NULL };
-static struct optname s_optname      = { "squeeze-blank-lines",  NULL };
-static struct optname S__optname     = { "chop-long-lines",      NULL };
+const struct optname p_optname      = { "pattern",              NULL };
+const struct optname P__optname     = { "prompt",               NULL };
+const struct optname q2_optname     = { "silent",               NULL };
+const struct optname q_optname      = { "quiet",                &q2_optname };
+const struct optname r_optname      = { "raw-control-chars",    NULL };
+const struct optname s_optname      = { "squeeze-blank-lines",  NULL };
+const struct optname S__optname     = { "chop-long-lines",      NULL };
 #if TAGS
-static struct optname t_optname      = { "tag",                  NULL };
-static struct optname T__optname     = { "tag-file",             NULL };
+const struct optname t_optname      = { "tag",                  NULL };
+const struct optname T__optname     = { "tag-file",             NULL };
 #endif
-static struct optname u_optname      = { "underline-special",    NULL };
-static struct optname V__optname     = { "version",              NULL };
-static struct optname w_optname      = { "hilite-unread",        NULL };
-static struct optname x_optname      = { "tabs",                 NULL };
-static struct optname X__optname     = { "no-init",              NULL };
-static struct optname y_optname      = { "max-forw-scroll",      NULL };
-static struct optname z_optname      = { "window",               NULL };
-static struct optname quote_optname  = { "quotes",               NULL };
-static struct optname tilde_optname  = { "tilde",                NULL };
-static struct optname query_optname  = { "help",                 NULL };
-static struct optname pound_optname  = { "shift",                NULL };
-static struct optname keypad_optname = { "no-keypad",            NULL };
-static struct optname oldbot_optname = { "old-bot",              NULL };
-static struct optname follow_optname = { "follow-name",          NULL };
-static struct optname use_backslash_optname = { "use-backslash", NULL };
-static struct optname rscroll_optname = { "rscroll", NULL };
-static struct optname nohistdups_optname = { "no-histdups",      NULL };
-static struct optname mousecap_optname = { "mouse",              NULL };
-static struct optname wheel_lines_optname = { "wheel-lines",     NULL };
-static struct optname perma_marks_optname = { "save-marks",      NULL };
-static struct optname linenum_width_optname = { "line-num-width", NULL };
-static struct optname status_col_width_optname = { "status-col-width", NULL };
-static struct optname incr_search_optname = { "incsearch",       NULL };
-static struct optname use_color_optname = { "use-color",         NULL };
-static struct optname want_filesize_optname = { "file-size",     NULL };
-static struct optname status_line_optname = { "status-line",     NULL };
-static struct optname header_optname = { "header",               NULL };
-static struct optname nonum_headers_optname = { "no-number-headers", NULL };
-static struct optname redraw_on_quit_optname = { "redraw-on-quit", NULL };
-static struct optname search_type_optname = { "search-options", NULL };
+const struct optname u_optname      = { "underline-special",    NULL };
+const struct optname V__optname     = { "version",              NULL };
+const struct optname w_optname      = { "hilite-unread",        NULL };
+const struct optname x_optname      = { "tabs",                 NULL };
+const struct optname X__optname     = { "no-init",              NULL };
+const struct optname y_optname      = { "max-forw-scroll",      NULL };
+const struct optname z_optname      = { "window",               NULL };
+const struct optname quote_optname  = { "quotes",               NULL };
+const struct optname tilde_optname  = { "tilde",                NULL };
+const struct optname query_optname  = { "help",                 NULL };
+const struct optname pound_optname  = { "shift",                NULL };
+const struct optname keypad_optname = { "no-keypad",            NULL };
+const struct optname oldbot_optname = { "old-bot",              NULL };
+const struct optname follow_optname = { "follow-name",          NULL };
+const struct optname use_backslash_optname = { "use-backslash", NULL };
+const struct optname rscroll_optname = { "rscroll", NULL };
+const struct optname nohistdups_optname = { "no-histdups",      NULL };
+const struct optname mousecap_optname = { "mouse",              NULL };
+const struct optname wheel_lines_optname = { "wheel-lines",     NULL };
+const struct optname perma_marks_optname = { "save-marks",      NULL };
+const struct optname linenum_width_optname = { "line-num-width", NULL };
+const struct optname status_col_width_optname = { "status-col-width", NULL };
+const struct optname incr_search_optname = { "incsearch",       NULL };
+const struct optname use_color_optname = { "use-color",         NULL };
+const struct optname want_filesize_optname = { "file-size",     NULL };
+const struct optname status_line_optname = { "status-line",     NULL };
+const struct optname header_optname = { "header",               NULL };
+const struct optname nonum_headers_optname = { "no-number-headers", NULL };
+const struct optname redraw_on_quit_optname = { "redraw-on-quit", NULL };
+const struct optname search_type_optname = { "search-options", NULL };
 #if LESSTEST
-static struct optname ttyin_name_optname = { "tty",              NULL };
-static struct optname rstat_optname  = { "rstat",                NULL };
+const struct optname ttyin_name_optname = { "tty",              NULL };
+const struct optname rstat_optname  = { "rstat",                NULL };
 #endif /*LESSTEST*/
 
 
@@ -168,6 +230,9 @@ static struct optname rstat_optname  = { "rstat",                NULL };
  * a new value, and odesc[1], if not NULL, is the set of characters
  * that are valid in the string.
  */
+#ifdef __VSF__
+#	define option				(less_ctx->opttbl.__option)
+#else
 static struct loption option[] =
 {
 	{ 'a', &a_optname,
@@ -633,6 +698,7 @@ static struct loption option[] =
 #endif /*LESSTEST*/
 	{ '\0', NULL, NOVAR, 0, NULL, NULL, { NULL, NULL, NULL } }
 };
+#endif
 
 
 /*

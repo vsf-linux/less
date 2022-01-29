@@ -21,6 +21,23 @@
 #include "less.h"
 #include <signal.h>
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define sigs					(less_ctx->pub.__sigs)
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define sc_height			(less_ctx->pub.__sc_height)
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define lnloop				(less_ctx->pub.__lnloop)
+#	define linenums				(less_ctx->pub.__linenums)
+#	define wscroll				(less_ctx->pub.__wscroll)
+#	define reading				(less_ctx->pub.__reading)
+#	define quit_on_intr			(less_ctx->pub.__quit_on_intr)
+#	define secure				(less_ctx->pub.__secure)
+#	define jump_sline_fraction	(less_ctx->pub.__jump_sline_fraction)
+#else
 /*
  * "sigs" contains bits indicating signals which need to be processed.
  */
@@ -35,6 +52,7 @@ extern int reading;
 extern int quit_on_intr;
 extern int secure;
 extern long jump_sline_fraction;
+#endif
 
 /*
  * Interrupt signal handler.

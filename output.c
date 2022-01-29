@@ -20,6 +20,23 @@
 #endif
 #endif
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define errmsgs				(less_ctx->pub.__errmsgs)
+#	define need_clr				(less_ctx->pub.__need_clr)
+#	define final_attr			(less_ctx->pub.__final_attr)
+#	define at_prompt			(less_ctx->pub.__at_prompt)
+#	define sigs					(less_ctx->pub.__sigs)
+#	define sc_width				(less_ctx->pub.__sc_width)
+#	define so_s_width			(less_ctx->pub.__so_s_width)
+#	define so_e_width			(less_ctx->pub.__so_e_width)
+#	define screen_trashed		(less_ctx->pub.__screen_trashed)
+#	define is_tty				(less_ctx->pub.__is_tty)
+#	define oldbot				(less_ctx->pub.__oldbot)
+#else
 public int errmsgs;    /* Count of messages displayed by error() */
 public int need_clr;
 public int final_attr;
@@ -42,6 +59,7 @@ extern int bl_fg_color, bl_bg_color;
 extern int sgr_mode;
 #if MSDOS_COMPILER==WIN32C
 extern int vt_enabled;
+#endif
 #endif
 #endif
 
@@ -79,9 +97,15 @@ put_line(VOID_PARAM)
 	at_exit();
 }
 
+#ifdef __VSF__
+#	define obuf					(less_ctx->output.__obuf)
+#	define ob					(less_ctx->output.__ob)
+#	define outfd				(less_ctx->output.__outfd)
+#else
 static char obuf[OUTBUF_SIZE];
 static char *ob = obuf;
 static int outfd = 2; /* stderr */
+#endif
 
 #if MSDOS_COMPILER==WIN32C || MSDOS_COMPILER==BORLANDC || MSDOS_COMPILER==DJGPPC
 	static void
@@ -641,7 +665,7 @@ error(fmt, parg)
 	PARG *parg;
 {
 	int col = 0;
-	static char return_to_continue[] = "  (press RETURN)";
+	static const char return_to_continue[] = "  (press RETURN)";
 
 	errmsgs++;
 
@@ -678,7 +702,7 @@ error(fmt, parg)
 	flush();
 }
 
-static char intr_to_abort[] = "... (interrupt to abort)";
+static const char intr_to_abort[] = "... (interrupt to abort)";
 
 /*
  * Output a message in the lower left corner of the screen

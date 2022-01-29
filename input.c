@@ -19,6 +19,25 @@
 
 #include "less.h"
 
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+#endif
+
+#ifdef __VSF__
+#	define squeeze				(less_ctx->pub.__squeeze)
+#	define hshift				(less_ctx->pub.__hshift)
+#	define quit_if_one_screen	(less_ctx->pub.__quit_if_one_screen)
+#	define sigs					(less_ctx->pub.__sigs)
+#	define ignore_eoi			(less_ctx->pub.__ignore_eoi)
+#	define status_col			(less_ctx->pub.__status_col)
+#	define start_attnpos		(less_ctx->pub.__start_attnpos)
+#	define end_attnpos			(less_ctx->pub.__end_attnpos)
+#if HILITE_SEARCH
+#	define hilite_search		(less_ctx->pub.__hilite_search)
+#	define size_linebuf			(less_ctx->pub.__size_linebuf)
+#	define show_attn			(less_ctx->pub.__show_attn)
+#endif
+#else
 extern int squeeze;
 extern int hshift;
 extern int quit_if_one_screen;
@@ -31,6 +50,7 @@ extern POSITION end_attnpos;
 extern int hilite_search;
 extern int size_linebuf;
 extern int show_attn;
+#endif
 #endif
 
 /*
