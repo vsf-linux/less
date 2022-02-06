@@ -19,6 +19,7 @@
 #endif
 
 #ifdef __VSF__
+int vsf_less_dynlib_idx = -1;
 static void __less_public_mod_init(void *ctx)
 {
 	struct __less_public_ctx *__less_public_ctx = ctx;
