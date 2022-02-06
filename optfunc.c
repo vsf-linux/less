@@ -27,6 +27,55 @@
 #include "less.h"
 #include "option.h"
 
+#ifdef __VSF__
+#	define nbufs				(less_public_ctx->__nbufs)
+#	define bufspace				(less_public_ctx->__bufspace)
+#	define pr_type				(less_public_ctx->__pr_type)
+#	define plusoption			(less_public_ctx->__plusoption)
+#	define swindow				(less_public_ctx->__swindow)
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define secure				(less_public_ctx->__secure)
+#	define dohelp				(less_public_ctx->__dohelp)
+#	define is_tty				(less_public_ctx->__is_tty)
+#	define openquote			(less_public_ctx->__openquote)
+#	define closequote			(less_public_ctx->__closequote)
+#	define prproto				(less_public_ctx->__prproto)
+#	define eqproto				(less_public_ctx->__eqproto)
+#	define hproto				(less_public_ctx->__hproto)
+#	define wproto				(less_public_ctx->__wproto)
+#	define every_first_cmd		(less_public_ctx->__every_first_cmd)
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#	define jump_sline			(less_public_ctx->__jump_sline)
+#	define jump_sline_fraction	(less_public_ctx->__jump_sline_fraction)
+#	define shift_count			(less_public_ctx->__shift_count)
+#	define shift_count_fraction	(less_public_ctx->__shift_count_fraction)
+#	define rscroll_char			(less_public_ctx->__rscroll_char)
+#	define rscroll_attr			(less_public_ctx->__rscroll_attr)
+#	define mousecap				(less_public_ctx->__mousecap)
+#	define wheel_lines			(less_public_ctx->__wheel_lines)
+#	define less_is_more			(less_public_ctx->__less_is_more)
+#	define linenum_width		(less_public_ctx->__linenum_width)
+#	define status_col_width		(less_public_ctx->__status_col_width)
+#	define use_color			(less_public_ctx->__use_color)
+#	define want_filesize		(less_public_ctx->__want_filesize)
+#	define header_lines			(less_public_ctx->__header_lines)
+#	define header_cols			(less_public_ctx->__header_cols)
+#	define def_search_type		(less_public_ctx->__def_search_type)
+#	define chopline				(less_public_ctx->__chopline)
+#if LOGFILE
+#	define namelogfile			(less_public_ctx->__namelogfile)
+#	define force_logfile		(less_public_ctx->__force_logfile)
+#	define logfile				(less_public_ctx->__logfile)
+#endif
+#if TAGS
+#	define tagoption			(less_public_ctx->__tagoption)
+#	define tags					(less_public_ctx->__tags)
+#endif
+
+extern char ztags[];
+extern char version[];
+#else
 extern int nbufs;
 extern int bufspace;
 extern int pr_type;
@@ -87,6 +136,7 @@ extern int sgr_mode;
 #if MSDOS_COMPILER==WIN32C
 #ifndef COMMON_LVB_UNDERSCORE
 #define COMMON_LVB_UNDERSCORE 0x8000
+#endif
 #endif
 #endif
 #endif
@@ -462,9 +512,9 @@ opt__P(type, s)
 		case 's':  proto = &prproto[PR_SHORT];  s++;    break;
 		case 'm':  proto = &prproto[PR_MEDIUM]; s++;    break;
 		case 'M':  proto = &prproto[PR_LONG];   s++;    break;
-		case '=':  proto = &eqproto;            s++;    break;
-		case 'h':  proto = &hproto;             s++;    break;
-		case 'w':  proto = &wproto;             s++;    break;
+		case '=':  proto = (char **)&eqproto;   s++;    break;
+		case 'h':  proto = (char **)&hproto;    s++;    break;
+		case 'w':  proto = (char **)&wproto;    s++;    break;
 		default:   proto = &prproto[PR_SHORT];          break;
 		}
 		free(*proto);
@@ -721,9 +771,15 @@ opt_x(type, s)
 	int type;
 	char *s;
 {
+#ifdef __VSF__
+#	define tabstops				(less_public_ctx->__tabstops)
+#	define ntabstops			(less_public_ctx->__ntabstops)
+#	define tabdefault			(less_public_ctx->__tabdefault)
+#else
 	extern int tabstops[];
 	extern int ntabstops;
 	extern int tabdefault;
+#endif
 	char msg[60+((INT_STRLEN_BOUND(int)+1)*TABSTOP_MAX)];
 	int i;
 	PARG p;
@@ -768,6 +824,11 @@ opt_x(type, s)
 		error("%s", &p);
 		break;
 	}
+#ifdef __VSF__
+#	undef tabstops
+#	undef ntabstops
+#	undef tabdefault
+#endif
 }
 
 

@@ -21,7 +21,11 @@
 
 #include "less.h"
 
+#ifdef __VSF__
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#else
 extern IFILE    curr_ifile;
+#endif
 
 struct ifile {
 	struct ifile *h_next;           /* Links for command line list */
@@ -47,9 +51,35 @@ struct ifile {
 /*
  * Anchor for linked list.
  */
+#ifdef __VSF__
+#	define anchor				(less_ifile_ctx->__anchor)
+#	define ifiles				(less_ifile_ctx->__ifiles)
+#else
 static struct ifile anchor = { &anchor, &anchor, NULL, NULL, NULL, 0, 0, '\0',
 				{ NULL_POSITION, 0 } };
 static int ifiles = 0;
+#endif
+
+#ifdef __VSF__
+struct __less_ifile_ctx {
+	struct ifile __anchor;		// = { &anchor, &anchor, NULL, NULL, NULL, 0, 0, '\0', { NULL_POSITION, 0 } };
+	int __ifiles;
+};
+static void __less_ifile_mod_init(void *ctx)
+{
+	struct __less_ifile_ctx *__less_ifile_ctx = ctx;
+	__less_ifile_ctx->__anchor = (struct ifile) {
+		&__less_ifile_ctx->__anchor, &__less_ifile_ctx->__anchor,
+		NULL, NULL, NULL, 0, 0, '\0', { NULL_POSITION, 0 }
+	};
+}
+define_vsf_less_mod(less_ifile,
+	sizeof(struct __less_ifile_ctx),
+	VSF_LESS_MOD_IFILE,
+	__less_ifile_mod_init
+)
+#	define less_ifile_ctx		((struct __less_ifile_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_ifile)))
+#endif
 
 	static void
 incr_index(p, incr)

@@ -16,6 +16,37 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define squished				(less_public_ctx->__squished)
+#	define no_back_scroll		(less_public_ctx->__no_back_scroll)
+#	define forw_prompt			(less_public_ctx->__forw_prompt)
+#	define first_time			(less_public_ctx->__first_time)
+
+#	define sigs					(less_public_ctx->__sigs)
+#	define top_scroll			(less_public_ctx->__top_scroll)
+#	define quiet				(less_public_ctx->__quiet)
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define hshift				(less_public_ctx->__hshift)
+#	define auto_wrap			(less_public_ctx->__auto_wrap)
+#	define plusoption			(less_public_ctx->__plusoption)
+#	define forw_scroll			(less_public_ctx->__forw_scroll)
+#	define back_scroll			(less_public_ctx->__back_scroll)
+#	define ignore_eoi			(less_public_ctx->__ignore_eoi)
+#	define clear_bg				(less_public_ctx->__clear_bg)
+#	define final_attr			(less_public_ctx->__final_attr)
+#	define header_lines			(less_public_ctx->__header_lines)
+#	define header_cols			(less_public_ctx->__header_cols)
+#if HILITE_SEARCH
+#	define size_linebuf			(less_public_ctx->__size_linebuf)
+#	define hilite_search		(less_public_ctx->__hilite_search)
+#	define status_col			(less_public_ctx->__status_col)
+#endif
+#if TAGS
+#	define tagoption			(less_public_ctx->__tagoption)
+#endif
+#else
 public int screen_trashed;
 public int squished;
 public int no_back_scroll = 0;
@@ -44,6 +75,23 @@ extern int status_col;
 #if TAGS
 extern char *tagoption;
 #endif
+#endif
+
+#if HAVE_TIME
+#ifdef __VSF__
+struct __less_forwback_ctx {
+	struct {
+		time_type __last_eof_bell;
+	} eof_bell;
+};
+define_vsf_less_mod(less_forwback,
+	sizeof(struct __less_forwback_ctx),
+	VSF_LESS_MOD_FORWBACK,
+	NULL
+)
+#	define less_forwback_ctx	((struct __less_forwback_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_forwback)))
+#endif
+#endif
 
 /*
  * Sound the bell to indicate user is trying to move past end of file.
@@ -52,11 +100,18 @@ extern char *tagoption;
 eof_bell(VOID_PARAM)
 {
 #if HAVE_TIME
+#ifdef __VSF__
+#	define last_eof_bell		(less_forwback_ctx->eof_bell.__last_eof_bell)
+#else
 	static time_type last_eof_bell = 0;
+#endif
 	time_type now = get_time();
 	if (now == last_eof_bell) /* max once per second */
 		return;
 	last_eof_bell = now;
+#ifdef __VSF__
+#	undef last_eof_bell
+#endif
 #endif
 	if (quiet == NOT_QUIET)
 		bell();

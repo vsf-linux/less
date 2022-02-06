@@ -59,6 +59,19 @@ struct linenum_info
 
 #define LONGTIME        (2)             /* In seconds */
 
+#ifdef __VSF__
+#	define anchor				(less_linenum_ctx->__anchor)
+#	define freelist				(less_linenum_ctx->__freelist)
+#	define pool					(less_linenum_ctx->__pool)
+#	define spare				(less_linenum_ctx->__spare)
+
+#	define linenums				(less_public_ctx->__linenums)
+#	define sigs					(less_public_ctx->__sigs)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define header_lines			(less_public_ctx->__header_lines)
+#	define nonum_headers		(less_public_ctx->__nonum_headers)
+#else
 static struct linenum_info anchor;      /* Anchor of the list */
 static struct linenum_info *freelist;   /* Anchor of the unused entries */
 static struct linenum_info pool[NPOOL]; /* The pool itself */
@@ -70,6 +83,27 @@ extern int sc_height;
 extern int screen_trashed;
 extern int header_lines;
 extern int nonum_headers;
+#endif
+
+#ifdef __VSF__
+struct __less_linenum_ctx {
+	struct linenum_info __anchor;
+	struct linenum_info *__freelist;
+	struct linenum_info __pool[200];
+	struct linenum_info *__spare;
+
+	int __loopcount;
+#if HAVE_TIME
+	time_type __startime;
+#endif
+};
+define_vsf_less_mod(less_linenum,
+	sizeof(struct __less_linenum_ctx),
+	VSF_LESS_MOD_LINENUM,
+	NULL
+)
+#	define less_linenum_ctx		((struct __less_linenum_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_linenum)))
+#endif
 
 /*
  * Initialize the line number structures.
@@ -216,9 +250,16 @@ longloopmessage(VOID_PARAM)
 	ierror("Calculating line numbers", NULL_PARG);
 }
 
+#ifdef __VSF__
+#	define loopcount			(less_linenum_ctx->__loopcount)
+#if HAVE_TIME
+#	define startime				(less_linenum_ctx->__startime)
+#endif
+#else
 static int loopcount;
 #if HAVE_TIME
 static time_type startime;
+#endif
 #endif
 
 	static void

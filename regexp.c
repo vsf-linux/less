@@ -75,6 +75,27 @@
  * to the thing following the set of BRANCHes.)  The opcodes are:
  */
 
+#ifdef __VSF__
+struct __less_regexp_ctx {
+	char *__regparse;
+	int __regnpar;
+	char __regdummy;
+	char *__regcode;
+	long __regsize;
+
+	char *__reginput;
+	char *__regbol;
+	char **__regstartp;
+	char **__regendp;
+};
+define_vsf_less_mod(less_regexp,
+	sizeof(struct __less_regexp_ctx),
+	VSF_LESS_MOD_REGEXP,
+	NULL
+)
+#	define less_regexp_ctx		((struct __less_regexp_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_regexp)))
+#endif
+
 /* definition	number	opnd?	meaning */
 #undef EOL
 #define	END	0	/* no	End of program. */
@@ -158,11 +179,19 @@
 /*
  * Global work variables for regcomp().
  */
+#ifdef __VSF__
+#	define regparse				(less_regexp_ctx->__regparse)
+#	define regnpar				(less_regexp_ctx->__regnpar)
+#	define regdummy				(less_regexp_ctx->__regdummy)
+#	define regcode				(less_regexp_ctx->__regcode)
+#	define regsize				(less_regexp_ctx->__regsize)
+#else
 static char *regparse;		/* Input-scan pointer. */
 static int regnpar;		/* () count. */
 static char regdummy;
 static char *regcode;		/* Code-emit pointer; &regdummy = don't. */
 static long regsize;		/* Code size. */
+#endif
 
 /*
  * The first byte of the regexp internal "program" is actually this magic
@@ -701,10 +730,17 @@ char *val;
 /*
  * Global work variables for regexec().
  */
+#ifdef __VSF__
+#	define reginput				(less_regexp_ctx->__reginput)
+#	define regbol				(less_regexp_ctx->__regbol)
+#	define regstartp			(less_regexp_ctx->__regstartp)
+#	define regendp				(less_regexp_ctx->__regendp)
+#else
 static char *reginput;		/* String-input pointer. */
 static char *regbol;		/* Beginning of input, for ^ check. */
 static char **regstartp;	/* Pointer to startp array. */
 static char **regendp;		/* Ditto for endp. */
+#endif
 
 /*
  * Forwards.

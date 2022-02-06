@@ -20,6 +20,75 @@
 #include "option.h"
 #include "cmd.h"
 
+#ifdef __VSF__
+#	define erase_char			(less_public_ctx->__erase_char)
+#	define erase2_char			(less_public_ctx->__erase2_char)
+#	define kill_char			(less_public_ctx->__kill_char)
+#	define sigs					(less_public_ctx->__sigs)
+#	define quit_if_one_screen	(less_public_ctx->__quit_if_one_screen)
+#	define squished				(less_public_ctx->__squished)
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define kent					(less_public_ctx->__kent)
+#	define swindow				(less_public_ctx->__swindow)
+#	define jump_sline			(less_public_ctx->__jump_sline)
+#	define quitting				(less_public_ctx->__quitting)
+#	define wscroll				(less_public_ctx->__wscroll)
+#	define top_scroll			(less_public_ctx->__top_scroll)
+#	define ignore_eoi			(less_public_ctx->__ignore_eoi)
+#	define secure				(less_public_ctx->__secure)
+#	define hshift				(less_public_ctx->__hshift)
+#	define bs_mode				(less_public_ctx->__bs_mode)
+#	define show_attn			(less_public_ctx->__show_attn)
+#	define status_col			(less_public_ctx->__status_col)
+#	define highest_hilite		(less_public_ctx->__highest_hilite)
+#	define start_attnpos		(less_public_ctx->__start_attnpos)
+#	define end_attnpos			(less_public_ctx->__end_attnpos)
+#	define every_first_cmd		(less_public_ctx->__every_first_cmd)
+#	define initial_scrpos		(less_public_ctx->__initial_scrpos)
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#	define ml_search			(less_public_ctx->__ml_search)
+#	define ml_examine			(less_public_ctx->__ml_examine)
+#	define wheel_lines			(less_public_ctx->__wheel_lines)
+#	define header_lines			(less_public_ctx->__header_lines)
+#	define def_search_type		(less_public_ctx->__def_search_type)
+#	define updown_match			(less_public_ctx->__updown_match)
+#if SHELL_ESCAPE || PIPEC
+#	define ml_shell				(less_public_ctx->__ml_shell)
+#endif
+#if EDITOR
+#	define editor				(less_public_ctx->__editor)
+#	define editproto			(less_public_ctx->__editproto)
+#endif
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define shift_count			(less_public_ctx->__shift_count)
+#	define oldbot				(less_public_ctx->__oldbot)
+#	define forw_prompt			(less_public_ctx->__forw_prompt)
+#	define incr_search			(less_public_ctx->__incr_search)
+#if MSDOS_COMPILER==WIN32C
+#	define utf_mode				(less_public_ctx->__utf_mode)
+#endif
+
+extern const char version[];
+
+#if SHELL_ESCAPE
+#	define shellcmd				(less_command_ctx->__shellcmd)
+#endif
+#	define mca					(less_command_ctx->__mca)
+#	define search_type			(less_command_ctx->__search_type)
+#	define number				(less_command_ctx->__number)
+#	define fraction				(less_command_ctx->__fraction)
+#	define curropt				(less_command_ctx->__curropt)
+#	define opt_lower			(less_command_ctx->__opt_lower)
+#	define optflag				(less_command_ctx->__optflag)
+#	define optgetname			(less_command_ctx->__optgetname)
+#	define bottompos			(less_command_ctx->__bottompos)
+#	define save_hshift			(less_command_ctx->__save_hshift)
+#	define save_bs_mode			(less_command_ctx->__save_bs_mode)
+#if PIPEC
+#	define pipec				(less_command_ctx->__pipec)
+#endif
+#else
 extern int erase_char, erase2_char, kill_char;
 extern int sigs;
 extern int quit_if_one_screen;
@@ -84,13 +153,47 @@ static int save_bs_mode;
 #if PIPEC
 static char pipec;
 #endif
+#endif
 
 /* Stack of ungotten chars (via ungetcc) */
 struct ungot {
 	struct ungot *ug_next;
 	LWCHAR ug_char;
 };
-static struct ungot* ungot = NULL;
+#ifdef __VSF__
+#	define __ungot				(less_command_ctx->____ungot)
+#else
+static struct ungot* __ungot = NULL;
+#endif
+
+#ifdef __VSF__
+struct __less_command_ctx {
+#if SHELL_ESCAPE
+	char *__shellcmd;
+#endif
+	int __mca;
+	int __search_type;
+	LINENUM __number;
+	long __fraction;
+	struct loption *__curropt;
+	int __opt_lower;
+	int __optflag;
+	int __optgetname;
+	POSITION __bottompos;
+	int __save_hshift;
+	int __save_bs_mode;
+#if PIPEC
+	char __pipec;
+#endif
+	struct ungot* ____ungot;
+};
+define_vsf_less_mod(less_command,
+	sizeof(struct __less_command_ctx),
+	VSF_LESS_MOD_COMMAND,
+	NULL
+)
+#	define less_command_ctx		((struct __less_command_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_command)))
+#endif
 
 static void multi_search LESSPARAMS((char *pattern, int n, int silent));
 
@@ -790,7 +893,7 @@ prompt(VOID_PARAM)
 {
 	constant char *p;
 
-	if (ungot != NULL && ungot->ug_char != CHAR_END_COMMAND)
+	if (__ungot != NULL && __ungot->ug_char != CHAR_END_COMMAND)
 	{
 		/*
 		 * No prompt necessary if commands are from 
@@ -886,7 +989,7 @@ dispversion(VOID_PARAM)
 {
 	PARG parg;
 
-	parg.p_string = version;
+	parg.p_string = (char *)version;
 	error("less %s", &parg);
 }
 
@@ -907,7 +1010,7 @@ getcc_end_command(VOID_PARAM)
 		return ('\n'); 
 	default:
 		/* Some other incomplete command.  Let user complete it. */
-		return ((ungot == NULL) ? getchr() : 0);
+		return ((__ungot == NULL) ? getchr() : 0);
 	}
 }
 
@@ -923,7 +1026,7 @@ getccu(VOID_PARAM)
 	LWCHAR c = 0;
 	while (c == 0)
 	{
-		if (ungot == NULL)
+		if (__ungot == NULL)
 		{
 			/* Normal case: no ungotten chars.
 			 * Get char from the user. */
@@ -932,9 +1035,9 @@ getccu(VOID_PARAM)
 		{
 			/* Ungotten chars available:
 			 * Take the top of stack (most recent). */
-			struct ungot *ug = ungot;
+			struct ungot *ug = __ungot;
 			c = ug->ug_char;
-			ungot = ug->ug_next;
+			__ungot = ug->ug_next;
 			free(ug);
 
 			if (c == CHAR_END_COMMAND)
@@ -1010,8 +1113,8 @@ ungetcc(c)
 	struct ungot *ug = (struct ungot *) ecalloc(1, sizeof(struct ungot));
 
 	ug->ug_char = c;
-	ug->ug_next = ungot;
-	ungot = ug;
+	ug->ug_next = __ungot;
+	__ungot = ug;
 }
 
 /*
@@ -1025,12 +1128,12 @@ ungetcc_back(c)
 	struct ungot *ug = (struct ungot *) ecalloc(1, sizeof(struct ungot));
 	ug->ug_char = c;
 	ug->ug_next = NULL;
-	if (ungot == NULL)
-		ungot = ug;
+	if (__ungot == NULL)
+		__ungot = ug;
 	else
 	{
 		struct ungot *pu;
-		for (pu = ungot; pu->ug_next != NULL; pu = pu->ug_next)
+		for (pu = __ungot; pu->ug_next != NULL; pu = pu->ug_next)
 			continue;
 		pu->ug_next = ug;
 	}

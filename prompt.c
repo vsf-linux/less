@@ -20,6 +20,24 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	define pr_type				(less_public_ctx->__pr_type)
+#	define new_file				(less_public_ctx->__new_file)
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define so_s_width			(less_public_ctx->__so_s_width)
+#	define so_e_width			(less_public_ctx->__so_e_width)
+#	define linenums				(less_public_ctx->__linenums)
+#	define hshift				(less_public_ctx->__hshift)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define jump_sline			(less_public_ctx->__jump_sline)
+#	define less_is_more			(less_public_ctx->__less_is_more)
+#	define header_lines			(less_public_ctx->__header_lines)
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#if EDITOR
+#	define editor				(less_public_ctx->__editor)
+#	define editproto			(less_public_ctx->__editproto)
+#endif
+#else
 extern int pr_type;
 extern int new_file;
 extern int sc_width;
@@ -34,6 +52,7 @@ extern IFILE curr_ifile;
 #if EDITOR
 extern char *editor;
 extern char *editproto;
+#endif
 #endif
 
 /*
@@ -55,6 +74,15 @@ static constant char w_proto[] =
 static constant char more_proto[] =
   "--More--(?eEND ?x- Next\\: %x.:?pB%pB\\%:byte %bB?s/%s...%t)";
 
+#ifdef __VSF__
+#	define prproto				(less_public_ctx->__prproto)
+#	define eqproto				(less_public_ctx->__eqproto)
+#	define hproto				(less_public_ctx->__hproto)
+#	define wproto				(less_public_ctx->__wproto)
+
+#	define message				(less_prompt_ctx->__message)
+#	define mp					(less_prompt_ctx->__mp)
+#else
 public char *prproto[3];
 public char constant *eqproto = e_proto;
 public char constant *hproto = h_proto;
@@ -62,6 +90,26 @@ public char constant *wproto = w_proto;
 
 static char message[PROMPT_SIZE];
 static char *mp;
+#endif
+
+#ifdef __VSF__
+struct __less_prompt_ctx {
+	char __message[PROMPT_SIZE];
+	char *__mp;
+};
+define_vsf_less_mod(less_prompt,
+	sizeof(struct __less_prompt_ctx),
+	VSF_LESS_MOD_PROMPT,
+	NULL
+)
+void __less_prompt_mod_init_public(struct __less_public_ctx *ctx)
+{
+	ctx->__eqproto = e_proto;
+	ctx->__hproto = h_proto;
+	ctx->__wproto = w_proto;
+}
+#	define less_prompt_ctx		((struct __less_prompt_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_prompt)))
+#endif
 
 /*
  * Initialize the prompt prototype strings.

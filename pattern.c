@@ -13,9 +13,15 @@
 
 #include "less.h"
 
+#ifdef __VSF__
+#	define caseless				(less_public_ctx->__caseless)
+#	define is_caseless			(less_public_ctx->__is_caseless)
+#	define utf_mode				(less_public_ctx->__utf_mode)
+#else
 extern int caseless;
 extern int is_caseless;
 extern int utf_mode;
+#endif
 
 /*
  * Compile a search pattern, for future use by match_pattern.

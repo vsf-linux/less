@@ -20,6 +20,21 @@
 #include <sys/stat.h>
 #endif
 
+#ifdef __VSF__
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define utf_mode				(less_public_ctx->__utf_mode)
+#	define no_hist_dups			(less_public_ctx->__no_hist_dups)
+#	define marks_modified		(less_public_ctx->__marks_modified)
+#	define secure				(less_public_ctx->__secure)
+#	define updown_match			(less_public_ctx->__updown_match)
+
+#	define cmdbuf				(less_cmdbuf_ctx->__cmdbuf)
+#	define cmd_col				(less_cmdbuf_ctx->__cmd_col)
+#	define prompt_col			(less_cmdbuf_ctx->__prompt_col)
+#	define cp					(less_cmdbuf_ctx->__cp)
+#	define cmd_offset			(less_cmdbuf_ctx->__cmd_offset)
+#	define literal				(less_cmdbuf_ctx->__literal)
+#else
 extern int sc_width;
 extern int utf_mode;
 extern int no_hist_dups;
@@ -33,12 +48,21 @@ static char *cp;                 /* Pointer into cmdbuf */
 static int cmd_offset;           /* Index into cmdbuf of first displayed char */
 static int literal;              /* Next input char should not be interpreted */
 public int updown_match = -1;    /* Prefix length in up/down movement */
+#endif
 
 #if TAB_COMPLETE_FILENAME
 static int cmd_complete LESSPARAMS((int action));
 /*
  * These variables are statics used by cmd_complete.
  */
+#ifdef __VSF__
+#	define in_completion		(less_cmdbuf_ctx->__in_completion)
+#	define tk_text				(less_cmdbuf_ctx->__tk_text)
+#	define tk_original			(less_cmdbuf_ctx->__tk_original)
+#	define tk_ipoint			(less_cmdbuf_ctx->__tk_ipoint)
+#	define tk_trial				(less_cmdbuf_ctx->__tk_trial)
+#	define tk_tlist				(less_cmdbuf_ctx->__tk_tlist)
+#else
 static int in_completion = 0;
 static char *tk_text;
 static char *tk_original;
@@ -46,13 +70,19 @@ static char *tk_ipoint;
 static char *tk_trial = NULL;
 static struct textlist tk_tlist;
 #endif
+#endif
 
 static int cmd_left();
 static int cmd_right();
 
+#ifdef __VSF__
+#	define openquote			(less_public_ctx->__openquote)
+#	define closequote			(less_public_ctx->__closequote)
+#else
 #if SPACES_IN_FILENAMES
 public char openquote = '"';
 public char closequote = '"';
+#endif
 #endif
 
 #if CMD_HISTORY
@@ -75,6 +105,16 @@ struct mlist
 	int modified;
 };
 
+#ifdef __VSF__
+#	define ml_search			(less_public_ctx->__ml_search)
+#	define mlist_search			(less_cmdbuf_ctx->__mlist_search)
+#	define ml_examine			(less_public_ctx->__ml_examine)
+#	define mlist_examine		(less_cmdbuf_ctx->__mlist_examine)
+#if SHELL_ESCAPE || PIPEC
+#	define ml_shell				(less_public_ctx->__ml_shell)
+#	define mlist_shell			(less_cmdbuf_ctx->__mlist_shell)
+#endif
+#else
 /*
  * These are the various command histories that exist.
  */
@@ -91,14 +131,23 @@ struct mlist mlist_shell =
 	{ &mlist_shell,   &mlist_shell,   &mlist_shell,   NULL, 0 };
 public void *ml_shell = (void *) &mlist_shell;
 #endif
+#endif
 
 #else /* CMD_HISTORY */
 
+#ifdef __VSF__
+#	define ml_search			(less_public_ctx->__ml_search)
+#	define ml_examine			(less_public_ctx->__ml_examine)
+#if SHELL_ESCAPE || PIPEC
+#	define ml_shell				(less_public_ctx->__ml_shell)
+#endif
+#else
 /* If CMD_HISTORY is off, these are just flags. */
 public void *ml_search = (void *)1;
 public void *ml_examine = (void *)2;
 #if SHELL_ESCAPE || PIPEC
 public void *ml_shell = (void *)3;
+#endif
 #endif
 
 #endif /* CMD_HISTORY */
@@ -106,12 +155,106 @@ public void *ml_shell = (void *)3;
 /*
  * History for the current command.
  */
+#ifdef __VSF__
+#	define curr_mlist			(less_cmdbuf_ctx->__curr_mlist)
+#	define curr_cmdflags		(less_cmdbuf_ctx->__curr_cmdflags)
+#	define cmd_mbc_buf			(less_cmdbuf_ctx->__cmd_mbc_buf)
+#	define cmd_mbc_buf_len		(less_cmdbuf_ctx->__cmd_mbc_buf_len)
+#	define cmd_mbc_buf_index	(less_cmdbuf_ctx->__cmd_mbc_buf_index)
+#else
 static struct mlist *curr_mlist = NULL;
 static int curr_cmdflags;
 
 static char cmd_mbc_buf[MAX_UTF_CHAR_LEN];
 static int cmd_mbc_buf_len;
 static int cmd_mbc_buf_index;
+#endif
+
+#ifdef __VSF__
+struct __less_cmdbuf_ctx {
+	char __cmdbuf[CMDBUF_SIZE];
+	int __cmd_col;
+	int __prompt_col;
+	char *__cp;
+	int __cmd_offset;
+	int __literal;
+
+#if TAB_COMPLETE_FILENAME
+	int __in_completion;
+	char *__tk_text;
+	char *__tk_original;
+	char *__tk_ipoint;
+	char *__tk_trial;
+	struct textlist __tk_tlist;
+#endif
+
+	int __curr_cmdflags;
+	char __cmd_mbc_buf[MAX_UTF_CHAR_LEN];
+	int __cmd_mbc_buf_len;
+	int __cmd_mbc_buf_index;
+
+#if CMD_HISTORY
+	struct mlist __mlist_search;		// = { &mlist_search,  &mlist_search,  &mlist_search,  NULL, 0 };
+	struct mlist __mlist_examine;		// = { &mlist_examine, &mlist_examine, &mlist_examine, NULL, 0 };
+#endif
+
+#if SHELL_ESCAPE || PIPEC
+	struct mlist __curr_mlist;			// = { &mlist_shell,   &mlist_shell,   &mlist_shell,   NULL, 0 };
+#endif
+	struct mlist *__curr_mlist;
+};
+static void __less_cmdbuf_mod_init(void *ctx)
+{
+	struct __less_cmdbuf_ctx *__less_cmdbuf_ctx = ctx;
+#if CMD_HISTORY
+	__less_cmdbuf_ctx->__mlist_search = (struct mlist) {
+		&__less_cmdbuf_ctx->__mlist_search,
+		&__less_cmdbuf_ctx->__mlist_search,
+		&__less_cmdbuf_ctx->__mlist_search,
+		NULL, 0
+	};
+	__less_cmdbuf_ctx->__mlist_examine = (struct mlist) {
+		&__less_cmdbuf_ctx->__mlist_examine,
+		&__less_cmdbuf_ctx->__mlist_examine,
+		&__less_cmdbuf_ctx->__mlist_examine,
+		NULL, 0
+	};
+#if SHELL_ESCAPE || PIPEC
+	__less_cmdbuf_ctx->__ml_shell = (struct mlist) {
+		&__less_cmdbuf_ctx->__ml_shell,
+		&__less_cmdbuf_ctx->__ml_shell,
+		&__less_cmdbuf_ctx->__ml_shell,
+		NULL, 0
+	};
+#endif
+#endif
+}
+define_vsf_less_mod(less_cmdbuf,
+	sizeof(struct __less_cmdbuf_ctx),
+	VSF_LESS_MOD_CMDBUG,
+	__less_cmdbuf_mod_init
+)
+#	define less_cmdbuf_ctx		((struct __less_cmdbuf_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_cmdbuf)))
+void __less_cmdbuf_mod_init_public(struct __less_public_ctx *ctx)
+{
+	ctx->__updown_match = -1;
+	ctx->__openquote = '"';
+    ctx->__closequote = '"';
+#if CMD_HISTORY
+	ctx->__ml_search = (void *)&mlist_search;
+	ctx->__ml_examine = (void *)&mlist_examine;
+#if SHELL_ESCAPE || PIPEC
+	ctx->__ml_shell = (void *)&mlist_shell;
+#endif
+#else
+	ctx->__ml_search = (void *)1;
+	ctx->__ml_examine = (void *)2;
+#if SHELL_ESCAPE || PIPEC
+	ctx->__ml_shell = (void *)3;
+#endif
+#endif
+}
+#endif
 
 
 /*

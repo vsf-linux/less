@@ -11,10 +11,17 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define jump_sline			(less_public_ctx->__jump_sline)
+#	define perma_marks			(less_public_ctx->__perma_marks)
+#else
 extern IFILE curr_ifile;
 extern int sc_height;
 extern int jump_sline;
 extern int perma_marks;
+#endif
 
 /*
  * A mark is an ifile (input file) plus a position within the file.
@@ -42,9 +49,29 @@ struct mark
 #define NUMARKS         ((2*26)+1)      /* user marks (not lastmark) */
 #define MOUSEMARK       (NMARKS-2)
 #define LASTMARK        (NMARKS-1)
+#ifdef __VSF__
+#	define marks				(less_mark_ctx->__marks)
+#	define marks_modified		(less_public_ctx->__marks_modified)
+#else
 static struct mark marks[NMARKS];
 public int marks_modified = 0;
+#endif
 
+#ifdef __VSF__
+struct __less_mark_ctx {
+	struct mark __marks[NMARKS];
+
+	struct {
+		struct mark __sm;
+	} getmark;
+};
+define_vsf_less_mod(less_mark,
+	sizeof(struct __less_mark_ctx),
+	VSF_LESS_MOD_MARK,
+	NULL
+)
+#	define less_mark_ctx		((struct __less_mark_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_mark)))
+#endif
 
 /*
  * Initialize a mark struct.
@@ -143,7 +170,11 @@ getmark(c)
 	int c;
 {
 	struct mark *m;
+#ifdef __VSF__
+#	define sm					(less_mark_ctx->getmark.__sm)
+#else
 	static struct mark sm;
+#endif
 
 	switch (c)
 	{
@@ -195,6 +226,9 @@ getmark(c)
 		break;
 	}
 	return (m);
+#ifdef __VSF__
+#	undef sm
+#endif
 }
 
 /*

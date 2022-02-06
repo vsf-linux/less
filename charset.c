@@ -27,9 +27,15 @@
 #include <windows.h>
 #endif
 
+#ifdef __VSF__
+#	define bs_mode				(less_public_ctx->__bs_mode)
+#	define utf_mode				(less_public_ctx->__utf_mode)
+#	define charsets				(less_charset_ctx->__charsets)
+#else
 extern int bs_mode;
 
 public int utf_mode = 0;
+#endif
 
 /*
  * Predefined character sets,
@@ -39,9 +45,18 @@ struct charset {
 	char *name;
 	int *p_flag;
 	char *desc;
-} charsets[] = {
+}
+#ifdef __VSF__
+static const __charsets[] = {
+#else
+charsets[] = {
+#endif
 		{ "ascii",              NULL,       "8bcccbcc18b95.b" },
+#ifdef __VSF__
+		{ "utf-8",              NULL,       "8bcccbcc18b95.b126.bb" },
+#else
 		{ "utf-8",              &utf_mode,  "8bcccbcc18b95.b126.bb" },
+#endif
 		{ "iso8859",            NULL,       "8bcccbcc18b95.33b." },
 		{ "latin3",             NULL,       "8bcccbcc18b95.33b5.b8.b15.b4.b12.b18.b12.b." },
 		{ "arabic",             NULL,       "8bcccbcc18b95.33b.3b.7b2.13b.3b.b26.5b19.b" },
@@ -118,11 +133,46 @@ struct cs_alias {
 #define IS_BINARY_CHAR  01
 #define IS_CONTROL_CHAR 02
 
+#ifdef __VSF__
+#	define chardef				(less_charset_ctx->__chardef)
+#	define binfmt				(less_charset_ctx->__binfmt)
+#	define utfbinfmt			(less_charset_ctx->__utfbinfmt)
+
+#	define binattr				(less_public_ctx->__binattr)
+#else
 static char chardef[256];
 static char *binfmt = NULL;
 static char *utfbinfmt = NULL;
 public int binattr = AT_STANDOUT|AT_COLOR_BIN;
+#endif
 
+#ifdef __VSF__
+struct __less_charset_ctx {
+	char __chardef[256];
+	char *__binfmt;
+	char *__utfbinfmt;
+	struct charset __charsets[dimof(__charsets)];
+
+	struct {
+		char __buf[MAX_PRCHAR_LEN+1];
+	} prchar;
+	struct {
+		char __buf[MAX_PRCHAR_LEN+1];
+	} prutfchar;
+};
+static void __less_charset_mod_init(void *ctx)
+{
+	struct __less_charset_ctx *__less_charset_ctx = ctx;
+	memcpy(__less_charset_ctx->__charsets, __charsets, sizeof(__charsets));
+	__less_charset_ctx->__charsets[1].p_flag = &less_public_ctx->__utf_mode;
+}
+define_vsf_less_mod(less_charset,
+	sizeof(struct __less_charset_ctx),
+	VSF_LESS_MOD_CHARSET,
+	__less_charset_mod_init
+)
+#	define less_charset_ctx		((struct __less_charset_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_charset)))
+#endif
 
 /*
  * Define a charset, given a description string.
@@ -445,7 +495,11 @@ prchar(c)
 	LWCHAR c;
 {
 	/* {{ This buffer can be overrun if LESSBINFMT is a long string. }} */
+#ifdef __VSF__
+#	define buf					(less_charset_ctx->prchar.__buf)
+#else
 	static char buf[MAX_PRCHAR_LEN+1];
+#endif
 
 	c &= 0377;
 	if ((c < 128 || !utf_mode) && !control_char(c))
@@ -471,6 +525,9 @@ prchar(c)
 	else
 		SNPRINTF1(buf, sizeof(buf), binfmt, c);
 	return (buf);
+#ifdef __VSF__
+#	undef buf
+#endif
 }
 
 /*
@@ -480,7 +537,11 @@ prchar(c)
 prutfchar(ch)
 	LWCHAR ch;
 {
+#ifdef __VSF__
+#	define buf					(less_charset_ctx->prutfchar.__buf)
+#else
 	static char buf[MAX_PRCHAR_LEN+1];
+#endif
 
 	if (ch == ESC)
 		strcpy(buf, "ESC");
@@ -502,6 +563,9 @@ prutfchar(ch)
 		*p = '\0';
 	}
 	return (buf);
+#ifdef __VSF__
+#	undef buf
+#endif
 }
 
 /*
@@ -732,9 +796,9 @@ step_char(pp, dir, limit)
  */
 
 #define DECLARE_RANGE_TABLE_START(name) \
-	static struct wchar_range name##_array[] = {
+	static const struct wchar_range name##_array[] = {
 #define DECLARE_RANGE_TABLE_END(name) \
-	}; struct wchar_range_table name##_table = { name##_array, sizeof(name##_array)/sizeof(*name##_array) };
+	}; const struct wchar_range_table name##_table = { (struct wchar_range *)name##_array, sizeof(name##_array)/sizeof(*name##_array) };
 
 DECLARE_RANGE_TABLE_START(compose)
 #include "compose.uni"
@@ -753,7 +817,7 @@ DECLARE_RANGE_TABLE_START(fmt)
 DECLARE_RANGE_TABLE_END(fmt)
 
 /* comb_table is special pairs, not ranges. */
-static struct wchar_range comb_table[] = {
+static const struct wchar_range comb_table[] = {
 	{0x0644,0x0622}, {0x0644,0x0623}, {0x0644,0x0625}, {0x0644,0x0627},
 };
 
@@ -792,8 +856,8 @@ is_in_table(ch, table)
 is_composing_char(ch)
 	LWCHAR ch;
 {
-	return is_in_table(ch, &compose_table) ||
-	       (bs_mode != BS_CONTROL && is_in_table(ch, &fmt_table));
+	return is_in_table(ch, (struct wchar_range_table *)&compose_table) ||
+	       (bs_mode != BS_CONTROL && is_in_table(ch, (struct wchar_range_table *)&fmt_table));
 }
 
 /*
@@ -803,8 +867,8 @@ is_composing_char(ch)
 is_ubin_char(ch)
 	LWCHAR ch;
 {
-	int ubin = is_in_table(ch, &ubin_table) ||
-	           (bs_mode == BS_CONTROL && is_in_table(ch, &fmt_table));
+	int ubin = is_in_table(ch, (struct wchar_range_table *)&ubin_table) ||
+	           (bs_mode == BS_CONTROL && is_in_table(ch, (struct wchar_range_table *)&fmt_table));
 	return ubin;
 }
 
@@ -815,7 +879,7 @@ is_ubin_char(ch)
 is_wide_char(ch)
 	LWCHAR ch;
 {
-	return is_in_table(ch, &wide_table);
+	return is_in_table(ch, (struct wchar_range_table *)&wide_table);
 }
 
 /*

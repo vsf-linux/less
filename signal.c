@@ -21,6 +21,19 @@
 #include "less.h"
 #include <signal.h>
 
+#ifdef __VSF__
+#	define sigs					(less_public_ctx->__sigs)
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define lnloop				(less_public_ctx->__lnloop)
+#	define linenums				(less_public_ctx->__linenums)
+#	define wscroll				(less_public_ctx->__wscroll)
+#	define reading				(less_public_ctx->__reading)
+#	define quit_on_intr			(less_public_ctx->__quit_on_intr)
+#	define secure				(less_public_ctx->__secure)
+#	define jump_sline_fraction	(less_public_ctx->__jump_sline_fraction)
+#else
 /*
  * "sigs" contains bits indicating signals which need to be processed.
  */
@@ -35,6 +48,7 @@ extern int reading;
 extern int quit_on_intr;
 extern int secure;
 extern long jump_sline_fraction;
+#endif
 
 /*
  * Interrupt signal handler.

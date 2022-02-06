@@ -18,6 +18,82 @@
 #include <windows.h>
 #endif
 
+#ifdef __VSF__
+static void __less_public_mod_init(void *ctx)
+{
+	struct __less_public_ctx *__less_public_ctx = ctx;
+	__less_public_ctx->__start_attnpos = NULL_POSITION;
+	__less_public_ctx->__end_attnpos = NULL_POSITION;
+	__less_public_ctx->__binattr = AT_STANDOUT|AT_COLOR_BIN;
+	__less_public_ctx->__first_time = 1;
+	__less_public_ctx->__ntabstops = 1;
+	__less_public_ctx->__tabdefault = 8;
+#if LOGFILE
+	__less_public_ctx->__logfile = -1;
+#endif
+	__less_public_ctx->__jump_sline_fraction = -1;
+	__less_public_ctx->__shift_count_fraction = -1;
+#if TAGS
+	public const char ztags[];
+	__less_public_ctx->__tags = ztags;
+#endif
+
+	extern void __less_cmdbuf_mod_init_public(struct __less_public_ctx *ctx);
+	__less_cmdbuf_mod_init_public(__less_public_ctx);
+	extern void __less_prompt_mod_init_public(struct __less_public_ctx *ctx);
+	__less_prompt_mod_init_public(__less_public_ctx);
+}
+define_vsf_less_mod(less_public,
+	sizeof(struct __less_public_ctx),
+	VSF_LESS_MOD_PUBLIC,
+	__less_public_mod_init
+)
+#endif
+
+#ifdef __VSF__
+#	define every_first_cmd		(less_public_ctx->__every_first_cmd)
+#	define new_file				(less_public_ctx->__new_file)
+#	define is_tty				(less_public_ctx->__is_tty)
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#	define old_ifile			(less_public_ctx->__old_ifile)
+#	define initial_scrpos		(less_public_ctx->__initial_scrpos)
+#	define start_attnpos		(less_public_ctx->__start_attnpos)
+#	define end_attnpos			(less_public_ctx->__end_attnpos)
+#	define wscroll				(less_public_ctx->__wscroll)
+#	define progname				(less_public_ctx->__progname)
+#	define quitting				(less_public_ctx->__quitting)
+#	define secure				(less_public_ctx->__secure)
+#	define dohelp				(less_public_ctx->__dohelp)
+#if LOGFILE
+#	define logfile				(less_public_ctx->__logfile)
+#	define force_logfile		(less_public_ctx->__force_logfile)
+#	define namelogfile			(less_public_ctx->__namelogfile)
+#endif
+#if EDITOR
+#	define editor				(less_public_ctx->__editor)
+#	define editproto			(less_public_ctx->__editproto)
+#endif
+#if TAGS
+#	define tags					(less_public_ctx->__tags)
+#	define tagoption			(less_public_ctx->__tagoption)
+#	define jump_sline			(less_public_ctx->__jump_sline)
+#endif
+#	define one_screen			(less_public_ctx->__one_screen)
+#	define less_is_more			(less_public_ctx->__less_is_more)
+#	define missing_cap			(less_public_ctx->__missing_cap)
+#	define know_dumb			(less_public_ctx->__know_dumb)
+#	define pr_type				(less_public_ctx->__pr_type)
+#	define quit_if_one_screen	(less_public_ctx->__quit_if_one_screen)
+#	define no_init				(less_public_ctx->__no_init)
+#	define errmsgs				(less_public_ctx->__errmsgs)
+#	define redraw_on_quit		(less_public_ctx->__redraw_on_quit)
+#	define term_init_done		(less_public_ctx->__term_init_done)
+#	define first_time			(less_public_ctx->__first_time)
+
+#ifdef WIN32
+#	define consoleTitle			(less_main_ctx->__consoleTitle)
+#endif
+#else
 public char *   every_first_cmd = NULL;
 public int      new_file;
 public int      is_tty;
@@ -64,6 +140,25 @@ extern int      errmsgs;
 extern int      redraw_on_quit;
 extern int      term_init_done;
 extern int      first_time;
+#endif
+
+#ifdef __VSF__
+struct __less_main_ctx {
+#ifdef WIN32
+	char __consoleTitle[256];
+#endif
+
+	struct {
+		int __save_status;
+	} quit;
+};
+define_vsf_less_mod(less_main,
+	sizeof(struct __less_main_ctx),
+	VSF_LESS_MOD_MAIN,
+	NULL
+)
+#	define less_main_ctx		((struct __less_main_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_main)))
+#endif
 
 /*
  * Entry point.
@@ -397,7 +492,11 @@ sprefix(ps, s, uppercase)
 quit(status)
 	int status;
 {
+#ifdef __VSF__
+#	define save_status			(less_main_ctx->quit.__save_status)
+#else
 	static int save_status;
+#endif
 
 	/*
 	 * Put cursor at bottom left corner, clear the line,
@@ -407,6 +506,10 @@ quit(status)
 		status = save_status;
 	else
 		save_status = status;
+#ifdef __VSF__
+#	undef save_status
+#endif
+
 #if LESSTEST
 	rstat('Q');
 #endif /*LESSTEST*/

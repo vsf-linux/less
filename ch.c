@@ -32,7 +32,11 @@ extern ino_t curr_ino;
 
 typedef POSITION BLOCKNUM;
 
+#ifdef __VSF__
+#	define ignore_eoi			(less_public_ctx->__ignore_eoi)
+#else
 public int ignore_eoi;
+#endif
 
 /*
  * Pool of buffers holding the most recently used blocks of the input file.
@@ -124,6 +128,25 @@ struct filestate {
 	thisfile->hashtbl[h].hnext->hprev = (bn); \
 	thisfile->hashtbl[h].hnext = (bn);
 
+#ifdef __VSF__
+#	define thisfile				(less_ch_ctx->__thisfile)
+#	define ch_ungotchar			(less_ch_ctx->__ch_ungotchar)
+#	define maxbufs				(less_ch_ctx->__maxbufs)
+
+#	define autobuf				(less_public_ctx->__autobuf)
+#	define sigs					(less_public_ctx->__sigs)
+#	define secure				(less_public_ctx->__secure)
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define follow_mode			(less_public_ctx->__follow_mode)
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#if LOGFILE
+#	define logfile				(less_public_ctx->__logfile)
+#	define namelogfile			(less_public_ctx->__namelogfile)
+#endif
+
+extern constant char helpdata[];
+extern constant int size_helpdata;
+#else
 static struct filestate *thisfile;
 static int ch_ungotchar = -1;
 static int maxbufs = -1;
@@ -139,6 +162,32 @@ extern IFILE curr_ifile;
 #if LOGFILE
 extern int logfile;
 extern char *namelogfile;
+#endif
+#endif
+
+#ifdef __VSF__
+struct __less_ch_ctx {
+	struct filestate *__thisfile;
+	int __ch_ungotchar;			// = -1;
+	int __maxbufs;				// = -1;
+#if LOGFILE
+	struct {
+		int __tried;
+	} end_logfile;
+#endif
+};
+static void __less_ch_mod_init(void *ctx)
+{
+	struct __less_ch_ctx *__less_ch_ctx = ctx;
+	__less_ch_ctx->__ch_ungotchar = -1;
+	__less_ch_ctx->__maxbufs = -1;
+}
+define_vsf_less_mod(less_ch,
+	sizeof(struct __less_ch_ctx),
+	VSF_LESS_MOD_CH,
+	__less_ch_mod_init
+)
+#	define less_ch_ctx			((struct __less_ch_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_ch)))
 #endif
 
 static int ch_addbuf();
@@ -392,7 +441,11 @@ ch_ungetchar(c)
 	public void
 end_logfile(VOID_PARAM)
 {
+#ifdef __VSF__
+#	define tried				(less_ch_ctx->end_logfile.__tried)
+#else
 	static int tried = FALSE;
+#endif
 
 	if (logfile < 0)
 		return;
@@ -408,6 +461,9 @@ end_logfile(VOID_PARAM)
 	logfile = -1;
 	free(namelogfile);
 	namelogfile = NULL;
+#ifdef __VSF__
+#	undef tried
+#endif
 }
 
 /*

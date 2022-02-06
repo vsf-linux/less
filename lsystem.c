@@ -32,8 +32,13 @@
 #endif
 #endif
 
+#ifdef __VSF__
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define curr_ifile			(less_public_ctx->__curr_ifile)
+#else
 extern int screen_trashed;
 extern IFILE curr_ifile;
+#endif
 
 
 #if HAVE_SYSTEM

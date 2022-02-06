@@ -19,6 +19,25 @@
 #define MINPOS(a,b)     (((a) < (b)) ? (a) : (b))
 #define MAXPOS(a,b)     (((a) > (b)) ? (a) : (b))
 
+#ifdef __VSF__
+#	define sigs					(less_public_ctx->__sigs)
+#	define how_search			(less_public_ctx->__how_search)
+#	define caseless				(less_public_ctx->__caseless)
+#	define linenums				(less_public_ctx->__linenums)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define jump_sline			(less_public_ctx->__jump_sline)
+#	define bs_mode				(less_public_ctx->__bs_mode)
+#	define ctldisp				(less_public_ctx->__ctldisp)
+#	define status_col			(less_public_ctx->__status_col)
+#	define ml_search			(less_public_ctx->__ml_search)
+#	define start_attnpos		(less_public_ctx->__start_attnpos)
+#	define end_attnpos			(less_public_ctx->__end_attnpos)
+#	define utf_mode				(less_public_ctx->__utf_mode)
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define hshift				(less_public_ctx->__hshift)
+#else
 extern int sigs;
 extern int how_search;
 extern int caseless;
@@ -36,7 +55,19 @@ extern int screen_trashed;
 extern int sc_width;
 extern int sc_height;
 extern int hshift;
+#endif
 #if HILITE_SEARCH
+#ifdef __VSF__
+#	define hilite_search		(less_public_ctx->__hilite_search)
+#	define size_linebuf			(less_public_ctx->__size_linebuf)
+#	define squished				(less_public_ctx->__squished)
+#	define can_goto_line		(less_public_ctx->__can_goto_line)
+#	define xxpos				(less_public_ctx->__xxpos)
+
+#	define hide_hilite			(less_search_ctx->__hide_hilite)
+#	define prep_startpos		(less_search_ctx->__prep_startpos)
+#	define prep_endpos			(less_search_ctx->__prep_endpos)
+#else
 extern int hilite_search;
 extern int size_linebuf;
 extern int squished;
@@ -45,6 +76,7 @@ static int hide_hilite;
 static POSITION prep_startpos;
 static POSITION prep_endpos;
 extern POSITION xxpos;
+#endif
 
 /*
  * Structures for maintaining a set of ranges for hilites and filtered-out
@@ -94,9 +126,15 @@ struct hilite_tree
 #define HILITE_INITIALIZER() { NULL, NULL, NULL, NULL }
 #define HILITE_LOOKASIDE_STEPS 2
 
+#ifdef __VSF__
+#	define hilite_anchor		(less_search_ctx->__hilite_anchor)
+#	define filter_anchor		(less_search_ctx->__filter_anchor)
+#	define filter_infos			(less_search_ctx->__filter_infos)
+#else
 static struct hilite_tree hilite_anchor = HILITE_INITIALIZER();
 static struct hilite_tree filter_anchor = HILITE_INITIALIZER();
 static struct pattern_info *filter_infos = NULL;
+#endif
 
 #endif
 
@@ -117,9 +155,34 @@ struct pattern_info {
 #define info_compiled(info) ((info)->compiled)
 #endif
 	
+#ifdef __VSF__
+#	define search_info			(less_search_ctx->__search_info)
+#	define is_ucase_pattern		(less_search_ctx->__is_ucase_pattern)
+#	define is_caseless			(less_public_ctx->__is_caseless)
+#else
 static struct pattern_info search_info;
 static int is_ucase_pattern;
 public int is_caseless;
+#endif
+
+#ifdef __VSF__
+struct __less_search_ctx {
+	int __hide_hilite;
+	POSITION __prep_startpos;
+	POSITION __prep_endpos;
+	struct hilite_tree __hilite_anchor;
+	struct hilite_tree __filter_anchor;
+	struct pattern_info *__filter_infos;
+	struct pattern_info __search_info;
+	int __is_ucase_pattern;
+};
+define_vsf_less_mod(less_search,
+	sizeof(struct __less_search_ctx),
+	VSF_LESS_MOD_SEARCH,
+	NULL
+)
+#	define less_search_ctx		((struct __less_search_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_search)))
+#endif
 
 /*
  * Are there any uppercase letters in this string?

@@ -60,6 +60,17 @@
 #define LONG_JUMP       longjmp
 #endif
 
+#ifdef __VSF__
+#	define reading				(less_public_ctx->__reading)
+#	define consecutive_nulls	(less_public_ctx->__consecutive_nulls)
+#	define sigs					(less_public_ctx->__sigs)
+#	define ignore_eoi			(less_public_ctx->__ignore_eoi)
+#if !MSDOS_COMPILER
+#	define tty					(less_public_ctx->__tty)
+#endif
+
+#	define read_label			(less_os_ctx->__read_label)
+#else
 public int reading;
 public int consecutive_nulls = 0;
 
@@ -69,6 +80,24 @@ extern int sigs;
 extern int ignore_eoi;
 #if !MSDOS_COMPILER
 extern int tty;
+#endif
+#endif
+
+#ifdef __VSF__
+struct __less_os_ctx {
+	jmp_buf __read_label;
+#if !HAVE_STRERROR
+	struct {
+		char __buf[INT_STRLEN_BOUND(int)+12];
+	} strerror;
+#endif
+};
+define_vsf_less_mod(less_os,
+	sizeof(struct __less_os_ctx),
+	VSF_LESS_MOD_OS,
+	NULL
+)
+#	define less_os_ctx			((struct __less_os_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_os)))
 #endif
 
 #if USE_POLL
@@ -265,7 +294,11 @@ get_time(VOID_PARAM)
 strerror(err)
 	int err;
 {
+#ifdef __VSF__
+#	define buf					(less_os_ctx->strerror.__buf)
+#else
 	static char buf[INT_STRLEN_BOUND(int)+12];
+#endif
 #if HAVE_SYS_ERRLIST
 	extern char *sys_errlist[];
 	extern int sys_nerr;
@@ -275,6 +308,9 @@ strerror(err)
 #endif
 	sprintf(buf, "Error %d", err);
 	return buf;
+#ifdef __VSF__
+#	undef buf
+#endif
 }
 #endif
 

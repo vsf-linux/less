@@ -20,17 +20,46 @@
 #include "less.h"
 #include "option.h"
 
+#ifdef __VSF__
+#	define pendopt				(less_option_ctx->__pendopt)
+#	define plusoption			(less_public_ctx->__plusoption)
+#else
 static struct loption *pendopt;
 public int plusoption = FALSE;
+#endif
 
 static char *optstring LESSPARAMS((char *s, char **p_str, char *printopt, char *validchars));
 static int flip_triple LESSPARAMS((int val, int lc));
 
+#ifdef __VSF__
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define less_is_more			(less_public_ctx->__less_is_more)
+#	define quit_at_eof			(less_public_ctx->__quit_at_eof)
+#	define every_first_cmd		(less_public_ctx->__every_first_cmd)
+#	define opt_use_backslash	(less_public_ctx->__opt_use_backslash)
+#else
 extern int screen_trashed;
 extern int less_is_more;
 extern int quit_at_eof;
 extern char *every_first_cmd;
 extern int opt_use_backslash;
+#endif
+
+#ifdef __VSF__
+struct __less_option_ctx {
+	struct loption *__pendopt;
+
+	struct {
+		char __buf[MAX_PRCHAR_LEN+2];
+	} propt;
+};
+define_vsf_less_mod(less_option,
+	sizeof(struct __less_option_ctx),
+	VSF_LESS_MOD_OPTION,
+	NULL
+)
+#	define less_option_ctx		((struct __less_option_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_option)))
+#endif
 
 /*
  * Return a printable description of an option.
@@ -55,10 +84,17 @@ opt_desc(o)
 propt(c)
 	int c;
 {
+#ifdef __VSF__
+#	define buf					(less_option_ctx->propt.__buf)
+#else
 	static char buf[MAX_PRCHAR_LEN+2];
+#endif
 
 	sprintf(buf, "-%s", prchar(c));
 	return (buf);
+#ifdef __VSF__
+#	undef buf
+#endif
 }
 
 /* 

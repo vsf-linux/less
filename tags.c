@@ -14,7 +14,16 @@
 
 #if TAGS
 
-public char ztags[] = "tags";
+public const char ztags[] = "tags";
+#ifdef __VSF__
+#	define tags					(less_public_ctx->__tags)
+#	define linenums				(less_public_ctx->__linenums)
+#	define sigs					(less_public_ctx->__sigs)
+#	define ctldisp				(less_public_ctx->__ctldisp)
+
+#	define total				(less_tags_ctx->__total)
+#	define curseq				(less_tags_ctx->__curseq)
+#else
 public char *tags = ztags;
 
 static int total;
@@ -23,6 +32,7 @@ static int curseq;
 extern int linenums;
 extern int sigs;
 extern int ctldisp;
+#endif
 
 enum tag_result {
 	TAG_FOUND,
@@ -71,15 +81,44 @@ struct tag {
 	char *tag_pattern;      /* Pattern used to find the tag */
 	char tag_endline;       /* True if the pattern includes '$' */
 };
-#define TAG_END  ((struct tag *) &taglist)
-static struct taglist taglist = { TAG_END, TAG_END };
+#define TAG_END  ((struct tag *) &__taglist)
+#ifdef __VSF__
+#	define __taglist			(less_tags_ctx->____taglist)
+#	define curtag				(less_tags_ctx->__curtag)
+#else
+static struct taglist __taglist = { TAG_END, TAG_END };
 static struct tag *curtag;
+#endif
+
+#ifdef __VSF__
+struct __less_tags_ctx {
+	struct taglist ____taglist;		// = { TAG_END, TAG_END };
+	struct tag *__curtag;
+	int __total;
+	int __curseq;
+	int __circular;
+};
+static void __less_tags_mod_init(void *ctx)
+{
+	struct __less_tags_ctx *__less_tags_ctx = ctx;
+	__less_tags_ctx->____taglist = (struct taglist) {
+		(struct tag *)&__less_tags_ctx->____taglist,
+		(struct tag *)&__less_tags_ctx->____taglist
+	};
+}
+define_vsf_less_mod(less_tags,
+	sizeof(struct __less_tags_ctx),
+	VSF_LESS_MOD_TAGS,
+	__less_tags_mod_init
+)
+#	define less_tags_ctx		((struct __less_tags_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_tags)))
+#endif
 
 #define TAG_INS(tp) \
 	(tp)->next = TAG_END; \
-	(tp)->prev = taglist.tl_last; \
-	taglist.tl_last->next = (tp); \
-	taglist.tl_last = (tp);
+	(tp)->prev = __taglist.tl_last; \
+	__taglist.tl_last->next = (tp); \
+	__taglist.tl_last = (tp);
 
 #define TAG_RM(tp) \
 	(tp)->next->prev = (tp)->prev; \
@@ -98,7 +137,7 @@ cleantags(VOID_PARAM)
 	 * {{ Ideally, we wouldn't do this until after we know that we
 	 *    can load some other tag information. }}
 	 */
-	while ((tp = taglist.tl_first) != TAG_END)
+	while ((tp = __taglist.tl_first) != TAG_END)
 	{
 		TAG_RM(tp);
 		free(tp->tag_file);
@@ -379,7 +418,7 @@ findctag(tag)
 	fclose(f);
 	if (total == 0)
 		return TAG_NOTAG;
-	curtag = taglist.tl_first;
+	curtag = __taglist.tl_first;
 	curseq = 1;
 	return TAG_FOUND;
 }
@@ -528,7 +567,7 @@ findgtag(tag, type)
 	{
 		fp = stdin;
 		/* Set tag default because we cannot read stdin again. */
-		tags = ztags;
+		tags = (char *)ztags;
 	} else
 	{
 #if !HAVE_POPEN
@@ -625,7 +664,7 @@ findgtag(tag, type)
 	}
 
 	/* Check to see if we found anything. */
-	tp = taglist.tl_first;
+	tp = __taglist.tl_first;
 	if (tp == TAG_END)
 		return TAG_NOTAG;
 	curtag = tp;
@@ -633,7 +672,11 @@ findgtag(tag, type)
 	return TAG_FOUND;
 }
 
+#ifdef __VSF__
+#	define circular				(less_tags_ctx->__circular)
+#else
 static int circular = 0;        /* 1: circular tag structure */
+#endif
 
 /*
  * Return the filename required for the next gtag in the queue that was setup
@@ -655,7 +698,7 @@ nextgtag(VOID_PARAM)
 		if (!circular)
 			return NULL;
 		/* Wrapped around to the head of the queue */
-		curtag = taglist.tl_first;
+		curtag = __taglist.tl_first;
 		curseq = 1;
 	} else
 	{
@@ -685,7 +728,7 @@ prevgtag(VOID_PARAM)
 		if (!circular)
 			return NULL;
 		/* Wrapped around to the tail of the queue */
-		curtag = taglist.tl_last;
+		curtag = __taglist.tl_last;
 		curseq = total;
 	} else
 	{

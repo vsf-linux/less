@@ -21,11 +21,33 @@
 #include "less.h"
 #include "position.h"
 
+#ifdef __VSF__
+#	define table				(less_position_ctx->__table)
+#	define table_size			(less_position_ctx->__table_size)
+
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define sc_height			(less_public_ctx->__sc_height)
+#	define header_lines			(less_public_ctx->__header_lines)
+#else
 static POSITION *table = NULL;  /* The position table */
 static int table_size = 0;
 
 extern int sc_width, sc_height;
 extern int header_lines;
+#endif
+
+#ifdef __VSF__
+struct __less_position_ctx {
+	POSITION *__table;
+	int __table_size;
+};
+define_vsf_less_mod(less_position,
+	sizeof(struct __less_position_ctx),
+	VSF_LESS_MOD_POSITION,
+	NULL
+)
+#	define less_position_ctx	((struct __less_position_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_position)))
+#endif
 
 /*
  * Return the starting file position of a line displayed on the screen.

@@ -20,6 +20,19 @@
 #endif
 #endif
 
+#ifdef __VSF__
+#	define errmsgs				(less_public_ctx->__errmsgs)
+#	define need_clr				(less_public_ctx->__need_clr)
+#	define final_attr			(less_public_ctx->__final_attr)
+#	define at_prompt			(less_public_ctx->__at_prompt)
+#	define sigs					(less_public_ctx->__sigs)
+#	define sc_width				(less_public_ctx->__sc_width)
+#	define so_s_width			(less_public_ctx->__so_s_width)
+#	define so_e_width			(less_public_ctx->__so_e_width)
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define is_tty				(less_public_ctx->__is_tty)
+#	define oldbot				(less_public_ctx->__oldbot)
+#else
 public int errmsgs;    /* Count of messages displayed by error() */
 public int need_clr;
 public int final_attr;
@@ -43,6 +56,27 @@ extern int sgr_mode;
 #if MSDOS_COMPILER==WIN32C
 extern int vt_enabled;
 #endif
+#endif
+#endif
+
+#ifdef __VSF__
+struct __less_output_ctx {
+	char __obuf[OUTBUF_SIZE];
+	char *__ob;					// = obuf;
+	int __outfd;				// = 2;
+};
+static void __less_output_mod_init(void *ctx)
+{
+	struct __less_output_ctx *__less_output_ctx = ctx;
+	__less_output_ctx->__ob = __less_output_ctx->__obuf;
+	__less_output_ctx->__outfd = 2;
+}
+define_vsf_less_mod(less_output,
+	sizeof(struct __less_output_ctx),
+	VSF_LESS_MOD_OUTPUT,
+	__less_output_mod_init
+)
+#	define less_output_ctx		((struct __less_output_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_output)))
 #endif
 
 /*
@@ -79,9 +113,15 @@ put_line(VOID_PARAM)
 	at_exit();
 }
 
+#ifdef __VSF__
+#	define obuf					(less_output_ctx->__obuf)
+#	define ob					(less_output_ctx->__ob)
+#	define outfd				(less_output_ctx->__outfd)
+#else
 static char obuf[OUTBUF_SIZE];
 static char *ob = obuf;
 static int outfd = 2; /* stderr */
+#endif
 
 #if MSDOS_COMPILER==WIN32C || MSDOS_COMPILER==BORLANDC || MSDOS_COMPILER==DJGPPC
 	static void
@@ -641,7 +681,7 @@ error(fmt, parg)
 	PARG *parg;
 {
 	int col = 0;
-	static char return_to_continue[] = "  (press RETURN)";
+	static const char return_to_continue[] = "  (press RETURN)";
 
 	errmsgs++;
 
@@ -678,7 +718,7 @@ error(fmt, parg)
 	flush();
 }
 
-static char intr_to_abort[] = "... (interrupt to abort)";
+static const char intr_to_abort[] = "... (interrupt to abort)";
 
 /*
  * Output a message in the lower left corner of the screen

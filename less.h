@@ -585,3 +585,188 @@ POSITION lstrtopos LESSPARAMS ((char*, char**));
 #if MSDOS_COMPILER==WIN32C
 int pclose LESSPARAMS ((FILE*));
 #endif
+
+#ifdef __VSF__
+#	include "less_port_vsf.h"
+struct __less_public_ctx {
+	// ch.c
+	public int __ignore_eoi;
+	// charset.c
+	public int __utf_mode;
+	public int __binattr;					// = AT_STANDOUT|AT_COLOR_BIN;
+	// cmdbuf.c
+	public int __updown_match;				// = -1;
+	public char __openquote;				// = '"';
+	public char __closequote;				// = '"';
+	public void *__ml_search;				// = (void *) &mlist_search;
+	public void *__ml_examine;				// = (void *) &mlist_examine;
+#if SHELL_ESCAPE || PIPEC
+	public void *__ml_shell;				// = (void *) &mlist_shell;
+#endif
+
+	// edit
+	public int __fd0;
+#if HAVE_STAT_INO
+	public dev_t __curr_dev;
+	public ino_t __curr_ino;
+#endif
+
+	// forwback
+	public int __screen_trashed;
+	public int __squished;
+	public int __no_back_scroll;
+	public int __forw_prompt;
+	public int __first_time;				// = 1;
+
+	// line
+	public int __size_linebuf;
+	public int __hshift;
+	public int __tabstops[TABSTOP_MAX];
+	public int __ntabstops;					// = 1;
+	public int __tabdefault;				// = 8;
+	public POSITION __highest_hilite;
+
+	// main.c
+	public char *__every_first_cmd;
+	public int __new_file;
+	public int __is_tty;
+	public IFILE __curr_ifile;
+	public IFILE __old_ifile;
+	public struct scrpos __initial_scrpos;
+	public POSITION __start_attnpos;		// = NULL_POSITION;
+	public POSITION __end_attnpos;			// = NULL_POSITION;
+	public int __wscroll;
+	public char *__progname;
+	public int __quitting;
+	public int __secure;
+	public int __dohelp;
+#if LOGFILE
+	public int __logfile;					// = -1;
+	public int __force_logfile;
+	public char *__namelogfile;
+#endif
+#if EDITOR
+	public char *__editor;
+	public char *__editproto;
+#endif
+	public int __one_screen;
+
+	// mark
+	public int __marks_modified;
+
+	// optfunc
+	public char *__tagoption;
+
+	// opttbl
+	public int __quiet;
+	public int __how_search;
+	public int __top_scroll;
+	public int __pr_type;
+	public int __bs_mode;
+	public int __know_dumb;
+	public int __quit_at_eof;
+	public int __quit_if_one_screen;
+	public int __squeeze;
+	public int __tabstop;
+	public int __back_scroll;
+	public int __forw_scroll;
+	public int __caseless;
+	public int __linenums;
+	public int __autobuf;
+	public int __bufspace;
+	public int __ctldisp;
+	public int __force_open;
+	public int __swindow;
+	public int __jump_sline;
+	public long __jump_sline_fraction;		// = -1;
+	public long __shift_count_fraction;		// = -1;
+	public int __chopline;
+	public int __no_init;
+	public int __no_keypad;
+	public int __twiddle;
+	public int __show_attn;
+	public int __shift_count;
+	public int __status_col;
+	public int __use_lessopen;
+	public int __quit_on_intr;
+	public int __follow_mode;
+	public int __oldbot;
+	public int __opt_use_backslash;
+	public char __rscroll_char;
+	public int __rscroll_attr;
+	public int __no_hist_dups;
+	public int __mousecap;
+	public int __wheel_lines;
+	public int __perma_marks;
+	public int __linenum_width;
+	public int __status_col_width;
+	public int __incr_search;
+	public int __use_color;
+	public int __want_filesize;
+	public int __status_line;
+	public int __header_lines;
+	public int __header_cols;
+	public int __nonum_headers;
+	public int __redraw_on_quit;
+	public int __def_search_type;
+#if HILITE_SEARCH
+	public int __hilite_search;
+#endif
+	public int __less_is_more;
+
+	// os
+	public int __reading;
+	public int __consecutive_nulls;
+
+	// output
+	public int __errmsgs;
+	public int __need_clr;
+	public int __final_attr;
+	public int __at_prompt;
+
+	// prompt
+	public char *__prproto[3];
+	public char constant *__eqproto;		// = e_proto;
+	public char constant *__hproto;			// = h_proto;
+	public char constant *__wproto;			// = w_proto;
+
+	// screen
+	public int __auto_wrap;
+	public int __ignaw;
+	public int __erase_char;
+	public int __erase2_char;
+	public int __kill_char;
+	public int __werase_char;
+	public int __sc_width, __sc_height;
+	public int __bo_s_width, __bo_e_width;
+	public int __ul_s_width, __ul_e_width;
+	public int __so_s_width, __so_e_width;
+	public int __bl_s_width, __bl_e_width;
+	public int __above_mem, __below_mem;
+	public int __can_goto_line;
+	public int __clear_bg;
+	public int __missing_cap;
+	public char *__kent;
+	public int __term_init_done;
+
+	// search
+	public int __is_caseless;
+
+	// signal
+	public int __sigs;
+
+	// tags
+#if TAGS
+	public char *__tags;					//  = ztags;
+#endif
+
+	// ttyin
+	public int __tty;
+
+	// option
+	public int __plusoption;
+};
+//define_vsf_less_mod(less_public, sizeof(struct __less_public_ctx), VSF_LESS_MOD_PUBLIC, NULL)
+declare_vsf_less_mod(less_public)
+#	define less_public_ctx		((struct __less_public_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_public)))
+#endif

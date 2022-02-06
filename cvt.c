@@ -14,7 +14,11 @@
 #include "less.h"
 #include "charset.h"
 
+#ifdef __VSF__
+#	define utf_mode				(less_public_ctx->__utf_mode)
+#else
 extern int utf_mode;
+#endif
 
 /*
  * Get the length of a buffer needed to convert a string.

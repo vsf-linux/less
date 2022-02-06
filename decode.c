@@ -33,11 +33,21 @@
 #include "cmd.h"
 #include "lesskey.h"
 
+#ifdef __VSF__
+#	define erase_char			(less_public_ctx->__erase_char)
+#	define erase2_char			(less_public_ctx->__erase2_char)
+#	define kill_char			(less_public_ctx->__kill_char)
+#	define secure				(less_public_ctx->__secure)
+#	define mousecap				(less_public_ctx->__mousecap)
+#	define screen_trashed		(less_public_ctx->__screen_trashed)
+#	define sc_height			(less_public_ctx->__sc_height)
+#else
 extern int erase_char, erase2_char, kill_char;
 extern int secure;
 extern int mousecap;
 extern int screen_trashed;
 extern int sc_height;
+#endif
 
 #define SK(k) \
 	SK_SPECIAL_KEY, (k), 6, 1, 1, 1
@@ -45,8 +55,28 @@ extern int sc_height;
  * Command table is ordered roughly according to expected
  * frequency of use, so the common commands are near the beginning.
  */
+#ifdef __VSF__
+struct __less_decode_ctx {
+	struct tablelist *__list_fcmd_tables;
+	struct tablelist *__list_ecmd_tables;
+	struct tablelist *__list_var_tables;
+	struct tablelist *__list_sysvar_tables;
 
+	unsigned char __cmdtable[501];
+	unsigned char __edittable[216];
+
+#if USERFILE && HAVE_LESSKEYSRC
+	struct {
+		struct lesskey_tables __tables;
+	} lesskey_src;
+#endif
+};
+static void __less_decode_init_table(struct __less_decode_ctx *ctx)
+{
+unsigned char __cmdtable[] =
+#else
 static unsigned char cmdtable[] =
+#endif
 {
 	'\r',0,                         A_F_LINE,
 	'\n',0,                         A_F_LINE,
@@ -179,7 +209,14 @@ static unsigned char cmdtable[] =
 	'Z','Z',0,                      A_QUIT
 };
 
+#ifdef __VSF__
+	VSF_LINUX_ASSERT(sizeof(ctx->__cmdtable) >= sizeof(__cmdtable));
+	memcpy(ctx->__cmdtable, __cmdtable, sizeof(__cmdtable));
+
+unsigned char __edittable[] =
+#else
 static unsigned char edittable[] =
+#endif
 {
 	'\t',0,                         EC_F_COMPLETE,  /* TAB */
 	'\17',0,                        EC_B_COMPLETE,  /* BACKTAB */
@@ -219,6 +256,24 @@ static unsigned char edittable[] =
 	ESC,'[','M',0,                  EC_X11MOUSE,    /* X11 mouse report */
 	ESC,'[','<',0,                  EC_X116MOUSE,   /* X11 1006 mouse report */
 };
+#ifdef __VSF__
+	VSF_LINUX_ASSERT(sizeof(ctx->__edittable) >= sizeof(__edittable));
+	memcpy(ctx->__edittable, __edittable, sizeof(__edittable));
+}
+static void __less_decode_mod_init(void *ctx)
+{
+	struct __less_decode_ctx *__less_decode_ctx = ctx;
+	__less_decode_init_table(__less_decode_ctx);
+}
+define_vsf_less_mod(less_decode,
+	sizeof(struct __less_decode_ctx),
+	VSF_LESS_MOD_DECODE,
+	__less_decode_mod_init
+)
+#	define less_decode_ctx		((struct __less_decode_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_decode)))
+#	define cmdtable				(less_decode_ctx->__cmdtable)
+#	define edittable			(less_decode_ctx->__edittable)
+#endif
 
 /*
  * Structure to support a list of command tables.
@@ -233,11 +288,17 @@ struct tablelist
 /*
  * List of command tables and list of line-edit tables.
  */
+#ifdef __VSF__
+#	define list_fcmd_tables		(less_decode_ctx->__list_fcmd_tables)
+#	define list_ecmd_tables		(less_decode_ctx->__list_ecmd_tables)
+#	define list_var_tables		(less_decode_ctx->__list_var_tables)
+#	define list_sysvar_tables	(less_decode_ctx->__list_sysvar_tables)
+#else
 static struct tablelist *list_fcmd_tables = NULL;
 static struct tablelist *list_ecmd_tables = NULL;
 static struct tablelist *list_var_tables = NULL;
 static struct tablelist *list_sysvar_tables = NULL;
-
+#endif
 
 /*
  * Expand special key abbreviations in a command table.
@@ -912,7 +973,11 @@ lesskey_src(filename, sysvar)
 	char *filename;
 	int sysvar;
 {
+#ifdef __VSF__
+#	define tables				(less_decode_ctx->lesskey_src.__tables)
+#else
 	static struct lesskey_tables tables;
+#endif
 	int r = parse_lesskey(filename, &tables);
 	if (r != 0)
 		return (r);
@@ -921,6 +986,9 @@ lesskey_src(filename, sysvar)
 	add_var_table(sysvar ? &list_sysvar_tables : &list_var_tables,
 		tables.vartable.buf.data, tables.vartable.buf.end);
 	return (0);
+#ifdef __VSF__
+#	undef tables
+#endif
 }
 
 	void

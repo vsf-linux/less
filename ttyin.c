@@ -26,15 +26,25 @@
 public DWORD console_mode;
 public HANDLE tty;
 #else
+#ifdef __VSF__
+#	define tty					(less_public_ctx->__tty)
+#else
 public int tty;
+#endif
 #endif
 #if LESSTEST
 public char *ttyin_name = NULL;
 public int rstat_file = -1;
 #endif /*LESSTEST*/
+#ifdef __VSF__
+#	define sigs					(less_public_ctx->__sigs)
+#	define utf_mode				(less_public_ctx->__utf_mode)
+#	define wheel_lines			(less_public_ctx->__wheel_lines)
+#else
 extern int sigs;
 extern int utf_mode;
 extern int wheel_lines;
+#endif
 
 #if !MSDOS_COMPILER
 	static int

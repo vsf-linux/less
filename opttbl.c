@@ -15,6 +15,63 @@
 #include "less.h"
 #include "option.h"
 
+#ifdef __VSF__
+#	define quiet				(less_public_ctx->__quiet)
+#	define how_search			(less_public_ctx->__how_search)
+#	define top_scroll			(less_public_ctx->__top_scroll)
+#	define pr_type				(less_public_ctx->__pr_type)
+#	define bs_mode				(less_public_ctx->__bs_mode)
+#	define know_dumb			(less_public_ctx->__know_dumb)
+#	define quit_at_eof			(less_public_ctx->__quit_at_eof)
+#	define quit_if_one_screen	(less_public_ctx->__quit_if_one_screen)
+#	define squeeze				(less_public_ctx->__squeeze)
+#	define tabstop				(less_public_ctx->__tabstop)
+#	define back_scroll			(less_public_ctx->__back_scroll)
+#	define forw_scroll			(less_public_ctx->__forw_scroll)
+#	define caseless				(less_public_ctx->__caseless)
+#	define linenums				(less_public_ctx->__linenums)
+#	define autobuf				(less_public_ctx->__autobuf)
+#	define bufspace				(less_public_ctx->__bufspace)
+#	define ctldisp				(less_public_ctx->__ctldisp)
+#	define force_open			(less_public_ctx->__force_open)
+#	define swindow				(less_public_ctx->__swindow)
+#	define jump_sline			(less_public_ctx->__jump_sline)
+#	define jump_sline_fraction	(less_public_ctx->__jump_sline_fraction)
+#	define shift_count_fraction	(less_public_ctx->__shift_count_fraction)
+#	define chopline				(less_public_ctx->__chopline)
+#	define no_init				(less_public_ctx->__no_init)
+#	define no_keypad			(less_public_ctx->__no_keypad)
+#	define twiddle				(less_public_ctx->__twiddle)
+#	define show_attn			(less_public_ctx->__show_attn)
+#	define shift_count			(less_public_ctx->__shift_count)
+#	define status_col			(less_public_ctx->__status_col)
+#	define use_lessopen			(less_public_ctx->__use_lessopen)
+#	define quit_on_intr			(less_public_ctx->__quit_on_intr)
+#	define follow_mode			(less_public_ctx->__follow_mode)
+#	define oldbot				(less_public_ctx->__oldbot)
+#	define opt_use_backslash	(less_public_ctx->__opt_use_backslash)
+#	define rscroll_char			(less_public_ctx->__rscroll_char)
+#	define rscroll_attr			(less_public_ctx->__rscroll_attr)
+#	define no_hist_dups			(less_public_ctx->__no_hist_dups)
+#	define mousecap				(less_public_ctx->__mousecap)
+#	define wheel_lines			(less_public_ctx->__wheel_lines)
+#	define perma_marks			(less_public_ctx->__perma_marks)
+#	define linenum_width		(less_public_ctx->__linenum_width)
+#	define status_col_width		(less_public_ctx->__status_col_width)
+#	define incr_search			(less_public_ctx->__incr_search)
+#	define use_color			(less_public_ctx->__use_color)
+#	define want_filesize		(less_public_ctx->__want_filesize)
+#	define status_line			(less_public_ctx->__status_line)
+#	define header_lines			(less_public_ctx->__header_lines)
+#	define header_cols			(less_public_ctx->__header_cols)
+#	define nonum_headers		(less_public_ctx->__nonum_headers)
+#	define redraw_on_quit		(less_public_ctx->__redraw_on_quit)
+#	define def_search_type		(less_public_ctx->__def_search_type)
+#if HILITE_SEARCH
+#	define hilite_search		(less_public_ctx->__hilite_search)
+#endif
+#	define less_is_more			(less_public_ctx->__less_is_more)
+#else
 /*
  * Variables controlled by command line options.
  */
@@ -75,84 +132,87 @@ public int hilite_search;       /* Highlight matched search patterns? */
 #endif
 
 public int less_is_more = 0;    /* Make compatible with POSIX more */
+#endif
 
 /*
  * Long option names.
  */
-static struct optname a_optname      = { "search-skip-screen",   NULL };
-static struct optname b_optname      = { "buffers",              NULL };
-static struct optname B__optname     = { "auto-buffers",         NULL };
-static struct optname c_optname      = { "clear-screen",         NULL };
-static struct optname d_optname      = { "dumb",                 NULL };
-static struct optname D__optname     = { "color",                NULL };
-static struct optname e_optname      = { "quit-at-eof",          NULL };
-static struct optname f_optname      = { "force",                NULL };
-static struct optname F__optname     = { "quit-if-one-screen",   NULL };
+static const struct optname a_optname      = { "search-skip-screen",   NULL };
+static const struct optname b_optname      = { "buffers",              NULL };
+static const struct optname B__optname     = { "auto-buffers",         NULL };
+static const struct optname c_optname      = { "clear-screen",         NULL };
+static const struct optname d_optname      = { "dumb",                 NULL };
+static const struct optname D__optname     = { "color",                NULL };
+static const struct optname e_optname      = { "quit-at-eof",          NULL };
+static const struct optname f_optname      = { "force",                NULL };
+static const struct optname F__optname     = { "quit-if-one-screen",   NULL };
 #if HILITE_SEARCH
-static struct optname g_optname      = { "hilite-search",        NULL };
+static const struct optname g_optname      = { "hilite-search",        NULL };
 #endif
-static struct optname h_optname      = { "max-back-scroll",      NULL };
-static struct optname i_optname      = { "ignore-case",          NULL };
-static struct optname j_optname      = { "jump-target",          NULL };
-static struct optname J__optname     = { "status-column",        NULL };
+static const struct optname h_optname      = { "max-back-scroll",      NULL };
+static const struct optname i_optname      = { "ignore-case",          NULL };
+static const struct optname j_optname      = { "jump-target",          NULL };
+static const struct optname J__optname     = { "status-column",        NULL };
 #if USERFILE
-static struct optname k_optname      = { "lesskey-file",         NULL };
+static const struct optname k_optname      = { "lesskey-file",         NULL };
 #if HAVE_LESSKEYSRC 
-static struct optname ks_optname     = { "lesskey-src",          NULL };
+static const struct optname ks_optname     = { "lesskey-src",          NULL };
 #endif /* HAVE_LESSKEYSRC */
 #endif
-static struct optname K__optname     = { "quit-on-intr",         NULL };
-static struct optname L__optname     = { "no-lessopen",          NULL };
-static struct optname m_optname      = { "long-prompt",          NULL };
-static struct optname n_optname      = { "line-numbers",         NULL };
+static const struct optname K__optname     = { "quit-on-intr",         NULL };
+static const struct optname L__optname     = { "no-lessopen",          NULL };
+static const struct optname m_optname      = { "long-prompt",          NULL };
+static const struct optname n_optname      = { "line-numbers",         NULL };
 #if LOGFILE
-static struct optname o_optname      = { "log-file",             NULL };
-static struct optname O__optname     = { "LOG-FILE",             NULL };
+static const struct optname o_optname      = { "log-file",             NULL };
+static const struct optname O__optname     = { "LOG-FILE",             NULL };
 #endif
-static struct optname p_optname      = { "pattern",              NULL };
-static struct optname P__optname     = { "prompt",               NULL };
-static struct optname q2_optname     = { "silent",               NULL };
-static struct optname q_optname      = { "quiet",                &q2_optname };
-static struct optname r_optname      = { "raw-control-chars",    NULL };
-static struct optname s_optname      = { "squeeze-blank-lines",  NULL };
-static struct optname S__optname     = { "chop-long-lines",      NULL };
+static const struct optname p_optname      = { "pattern",              NULL };
+static const struct optname P__optname     = { "prompt",               NULL };
+static const struct optname q2_optname     = { "silent",               NULL };
+#ifndef __VSF__
+static const struct optname q_optname      = { "quiet",                &q2_optname };
+#endif
+static const struct optname r_optname      = { "raw-control-chars",    NULL };
+static const struct optname s_optname      = { "squeeze-blank-lines",  NULL };
+static const struct optname S__optname     = { "chop-long-lines",      NULL };
 #if TAGS
-static struct optname t_optname      = { "tag",                  NULL };
-static struct optname T__optname     = { "tag-file",             NULL };
+static const struct optname t_optname      = { "tag",                  NULL };
+static const struct optname T__optname     = { "tag-file",             NULL };
 #endif
-static struct optname u_optname      = { "underline-special",    NULL };
-static struct optname V__optname     = { "version",              NULL };
-static struct optname w_optname      = { "hilite-unread",        NULL };
-static struct optname x_optname      = { "tabs",                 NULL };
-static struct optname X__optname     = { "no-init",              NULL };
-static struct optname y_optname      = { "max-forw-scroll",      NULL };
-static struct optname z_optname      = { "window",               NULL };
-static struct optname quote_optname  = { "quotes",               NULL };
-static struct optname tilde_optname  = { "tilde",                NULL };
-static struct optname query_optname  = { "help",                 NULL };
-static struct optname pound_optname  = { "shift",                NULL };
-static struct optname keypad_optname = { "no-keypad",            NULL };
-static struct optname oldbot_optname = { "old-bot",              NULL };
-static struct optname follow_optname = { "follow-name",          NULL };
-static struct optname use_backslash_optname = { "use-backslash", NULL };
-static struct optname rscroll_optname = { "rscroll", NULL };
-static struct optname nohistdups_optname = { "no-histdups",      NULL };
-static struct optname mousecap_optname = { "mouse",              NULL };
-static struct optname wheel_lines_optname = { "wheel-lines",     NULL };
-static struct optname perma_marks_optname = { "save-marks",      NULL };
-static struct optname linenum_width_optname = { "line-num-width", NULL };
-static struct optname status_col_width_optname = { "status-col-width", NULL };
-static struct optname incr_search_optname = { "incsearch",       NULL };
-static struct optname use_color_optname = { "use-color",         NULL };
-static struct optname want_filesize_optname = { "file-size",     NULL };
-static struct optname status_line_optname = { "status-line",     NULL };
-static struct optname header_optname = { "header",               NULL };
-static struct optname nonum_headers_optname = { "no-number-headers", NULL };
-static struct optname redraw_on_quit_optname = { "redraw-on-quit", NULL };
-static struct optname search_type_optname = { "search-options", NULL };
+static const struct optname u_optname      = { "underline-special",    NULL };
+static const struct optname V__optname     = { "version",              NULL };
+static const struct optname w_optname      = { "hilite-unread",        NULL };
+static const struct optname x_optname      = { "tabs",                 NULL };
+static const struct optname X__optname     = { "no-init",              NULL };
+static const struct optname y_optname      = { "max-forw-scroll",      NULL };
+static const struct optname z_optname      = { "window",               NULL };
+static const struct optname quote_optname  = { "quotes",               NULL };
+static const struct optname tilde_optname  = { "tilde",                NULL };
+static const struct optname query_optname  = { "help",                 NULL };
+static const struct optname pound_optname  = { "shift",                NULL };
+static const struct optname keypad_optname = { "no-keypad",            NULL };
+static const struct optname oldbot_optname = { "old-bot",              NULL };
+static const struct optname follow_optname = { "follow-name",          NULL };
+static const struct optname use_backslash_optname = { "use-backslash", NULL };
+static const struct optname rscroll_optname = { "rscroll", NULL };
+static const struct optname nohistdups_optname = { "no-histdups",      NULL };
+static const struct optname mousecap_optname = { "mouse",              NULL };
+static const struct optname wheel_lines_optname = { "wheel-lines",     NULL };
+static const struct optname perma_marks_optname = { "save-marks",      NULL };
+static const struct optname linenum_width_optname = { "line-num-width", NULL };
+static const struct optname status_col_width_optname = { "status-col-width", NULL };
+static const struct optname incr_search_optname = { "incsearch",       NULL };
+static const struct optname use_color_optname = { "use-color",         NULL };
+static const struct optname want_filesize_optname = { "file-size",     NULL };
+static const struct optname status_line_optname = { "status-line",     NULL };
+static const struct optname header_optname = { "header",               NULL };
+static const struct optname nonum_headers_optname = { "no-number-headers", NULL };
+static const struct optname redraw_on_quit_optname = { "redraw-on-quit", NULL };
+static const struct optname search_type_optname = { "search-options", NULL };
 #if LESSTEST
-static struct optname ttyin_name_optname = { "tty",              NULL };
-static struct optname rstat_optname  = { "rstat",                NULL };
+static const struct optname ttyin_name_optname = { "tty",              NULL };
+static const struct optname rstat_optname  = { "rstat",                NULL };
 #endif /*LESSTEST*/
 
 
@@ -168,9 +228,28 @@ static struct optname rstat_optname  = { "rstat",                NULL };
  * a new value, and odesc[1], if not NULL, is the set of characters
  * that are valid in the string.
  */
-static struct loption option[] =
+#ifdef __VSF__
+struct __less_opttbl_ctx {
+	struct optname __q_optname;
+	struct loption __option[55];
+};
+define_vsf_less_mod(less_opttbl,
+	sizeof(struct __less_opttbl_ctx),
+	VSF_LESS_MOD_OPTTBL,
+	NULL
+)
+#	define less_opttbl_ctx		((struct __less_opttbl_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_opttbl)))
+#	define option				(less_opttbl_ctx->__option)
+static void __less_opttbl_init_option(struct __less_opttbl_ctx *ctx)
 {
-	{ 'a', &a_optname,
+	ctx->__q_optname = (struct optname) { "quiet", (struct optname *)&q2_optname };
+	
+struct loption __option[] =
+#else
+static struct loption option[] =
+#endif
+{
+	{ 'a', (struct optname *)&a_optname,
 		TRIPLE, OPT_ONPLUS, &how_search, NULL,
 		{
 			"Search includes displayed screen",
@@ -179,7 +258,7 @@ static struct loption option[] =
 		}
 	},
 
-	{ 'b', &b_optname,
+	{ 'b', (struct optname *)&b_optname,
 		NUMBER|INIT_HANDLER, 64, &bufspace, opt_b, 
 		{
 			"Max buffer space per file (K): ",
@@ -187,7 +266,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'B', &B__optname,
+	{ 'B', (struct optname *)&B__optname,
 		BOOL, OPT_ON, &autobuf, NULL,
 		{
 			"Don't automatically allocate buffers",
@@ -195,7 +274,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'c', &c_optname,
+	{ 'c', (struct optname *)&c_optname,
 		TRIPLE, OPT_OFF, &top_scroll, NULL,
 		{
 			"Repaint by scrolling from bottom of screen",
@@ -203,7 +282,7 @@ static struct loption option[] =
 			"Repaint by painting from top of screen"
 		}
 	},
-	{ 'd', &d_optname,
+	{ 'd', (struct optname *)&d_optname,
 		BOOL|NO_TOGGLE, OPT_OFF, &know_dumb, NULL,
 		{
 			"Assume intelligent terminal",
@@ -211,7 +290,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'D', &D__optname,
+	{ 'D', (struct optname *)&D__optname,
 		STRING|REPAINT|NO_QUERY, 0, NULL, opt_D,
 		{
 			"color desc: ", 
@@ -219,7 +298,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'e', &e_optname,
+	{ 'e', (struct optname *)&e_optname,
 		TRIPLE, OPT_OFF, &quit_at_eof, NULL,
 		{
 			"Don't quit at end-of-file",
@@ -227,7 +306,7 @@ static struct loption option[] =
 			"Quit immediately at end-of-file"
 		}
 	},
-	{ 'f', &f_optname,
+	{ 'f', (struct optname *)&f_optname,
 		BOOL, OPT_OFF, &force_open, NULL,
 		{
 			"Open only regular files",
@@ -235,7 +314,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'F', &F__optname,
+	{ 'F', (struct optname *)&F__optname,
 		BOOL, OPT_OFF, &quit_if_one_screen, NULL,
 		{
 			"Don't quit if end-of-file on first screen",
@@ -244,7 +323,7 @@ static struct loption option[] =
 		}
 	},
 #if HILITE_SEARCH
-	{ 'g', &g_optname,
+	{ 'g', (struct optname *)&g_optname,
 		TRIPLE|HL_REPAINT, OPT_ONPLUS, &hilite_search, NULL,
 		{
 			"Don't highlight search matches",
@@ -253,7 +332,7 @@ static struct loption option[] =
 		}
 	},
 #endif
-	{ 'h', &h_optname,
+	{ 'h', (struct optname *)&h_optname,
 		NUMBER, -1, &back_scroll, NULL,
 		{
 			"Backwards scroll limit: ",
@@ -261,7 +340,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'i', &i_optname,
+	{ 'i', (struct optname *)&i_optname,
 		TRIPLE|HL_REPAINT, OPT_OFF, &caseless, opt_i,
 		{
 			"Case is significant in searches",
@@ -269,7 +348,7 @@ static struct loption option[] =
 			"Ignore case in searches and in patterns"
 		}
 	},
-	{ 'j', &j_optname,
+	{ 'j', (struct optname *)&j_optname,
 		STRING, 0, NULL, opt_j,
 		{
 			"Target line: ",
@@ -277,7 +356,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'J', &J__optname,
+	{ 'J', (struct optname *)&J__optname,
 		BOOL|REPAINT, OPT_OFF, &status_col, NULL,
 		{
 			"Don't display a status column",
@@ -286,18 +365,18 @@ static struct loption option[] =
 		}
 	},
 #if USERFILE
-	{ 'k', &k_optname,
+	{ 'k', (struct optname *)&k_optname,
 		STRING|NO_TOGGLE|NO_QUERY, 0, NULL, opt_k,
 		{ NULL, NULL, NULL }
 	},
 #if HAVE_LESSKEYSRC 
-	{ OLETTER_NONE, &ks_optname,
+	{ OLETTER_NONE, (struct optname *)&ks_optname,
 		STRING|NO_TOGGLE|NO_QUERY, 0, NULL, opt_ks,
 		{ NULL, NULL, NULL }
 	},
 #endif /* HAVE_LESSKEYSRC */
 #endif
-	{ 'K', &K__optname,
+	{ 'K', (struct optname *)&K__optname,
 		BOOL, OPT_OFF, &quit_on_intr, NULL,
 		{
 			"Interrupt (ctrl-C) returns to prompt",
@@ -305,7 +384,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'L', &L__optname,
+	{ 'L', (struct optname *)&L__optname,
 		BOOL, OPT_ON, &use_lessopen, NULL,
 		{
 			"Don't use the LESSOPEN filter",
@@ -313,7 +392,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'm', &m_optname,
+	{ 'm', (struct optname *)&m_optname,
 		TRIPLE, OPT_OFF, &pr_type, NULL,
 		{
 			"Short prompt",
@@ -321,7 +400,7 @@ static struct loption option[] =
 			"Long prompt"
 		}
 	},
-	{ 'n', &n_optname,
+	{ 'n', (struct optname *)&n_optname,
 		TRIPLE|REPAINT, OPT_ON, &linenums, NULL,
 		{
 			"Don't use line numbers",
@@ -330,24 +409,24 @@ static struct loption option[] =
 		}
 	},
 #if LOGFILE
-	{ 'o', &o_optname,
+	{ 'o', (struct optname *)&o_optname,
 		STRING, 0, NULL, opt_o,
 		{ "log file: ", NULL, NULL }
 	},
-	{ 'O', &O__optname,
+	{ 'O', (struct optname *)&O__optname,
 		STRING, 0, NULL, opt__O,
 		{ "Log file: ", NULL, NULL }
 	},
 #endif
-	{ 'p', &p_optname,
+	{ 'p', (struct optname *)&p_optname,
 		STRING|NO_TOGGLE|NO_QUERY, 0, NULL, opt_p,
 		{ NULL, NULL, NULL }
 	},
-	{ 'P', &P__optname,
+	{ 'P', (struct optname *)&P__optname,
 		STRING, 0, NULL, opt__P,
 		{ "prompt: ", NULL, NULL }
 	},
-	{ 'q', &q_optname,
+	{ 'q', (struct optname *)&ctx->__q_optname,
 		TRIPLE, OPT_OFF, &quiet, NULL,
 		{
 			"Ring the bell for errors AND at eof/bof",
@@ -355,7 +434,7 @@ static struct loption option[] =
 			"Never ring the bell"
 		}
 	},
-	{ 'r', &r_optname,
+	{ 'r', (struct optname *)&r_optname,
 		TRIPLE|REPAINT, OPT_OFF, &ctldisp, NULL,
 		{
 			"Display control characters as ^X",
@@ -363,7 +442,7 @@ static struct loption option[] =
 			"Display ANSI sequences directly, other control characters as ^X"
 		}
 	},
-	{ 's', &s_optname,
+	{ 's', (struct optname *)&s_optname,
 		BOOL|REPAINT, OPT_OFF, &squeeze, NULL,
 		{
 			"Display all blank lines",
@@ -371,7 +450,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'S', &S__optname,
+	{ 'S', (struct optname *)&S__optname,
 		BOOL|REPAINT, OPT_OFF, &chopline, NULL,
 		{
 			"Fold long lines",
@@ -380,16 +459,16 @@ static struct loption option[] =
 		}
 	},
 #if TAGS
-	{ 't', &t_optname,
+	{ 't', (struct optname *)&t_optname,
 		STRING|NO_QUERY, 0, NULL, opt_t,
 		{ "tag: ", NULL, NULL }
 	},
-	{ 'T', &T__optname,
+	{ 'T', (struct optname *)&T__optname,
 		STRING, 0, NULL, opt__T,
 		{ "tags file: ", NULL, NULL }
 	},
 #endif
-	{ 'u', &u_optname,
+	{ 'u', (struct optname *)&u_optname,
 		TRIPLE|REPAINT, OPT_OFF, &bs_mode, NULL,
 		{
 			"Display underlined text in underline mode",
@@ -397,11 +476,11 @@ static struct loption option[] =
 			"Print backspace as ^H"
 		}
 	},
-	{ 'V', &V__optname,
+	{ 'V', (struct optname *)&V__optname,
 		NOVAR, 0, NULL, opt__V,
 		{ NULL, NULL, NULL }
 	},
-	{ 'w', &w_optname,
+	{ 'w', (struct optname *)&w_optname,
 		TRIPLE|REPAINT, OPT_OFF, &show_attn, NULL,
 		{
 			"Don't highlight first unread line",
@@ -409,7 +488,7 @@ static struct loption option[] =
 			"Highlight first unread line after any forward movement",
 		}
 	},
-	{ 'x', &x_optname,
+	{ 'x', (struct optname *)&x_optname,
 		STRING|REPAINT, 0, NULL, opt_x,
 		{
 			"Tab stops: ",
@@ -417,7 +496,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'X', &X__optname,
+	{ 'X', (struct optname *)&X__optname,
 		BOOL|NO_TOGGLE, OPT_OFF, &no_init, NULL,
 		{
 			"Send init/deinit strings to terminal",
@@ -425,7 +504,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'y', &y_optname,
+	{ 'y', (struct optname *)&y_optname,
 		NUMBER, -1, &forw_scroll, NULL,
 		{
 			"Forward scroll limit: ",
@@ -433,7 +512,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ 'z', &z_optname,
+	{ 'z', (struct optname *)&z_optname,
 		NUMBER, -1, &swindow, NULL,
 		{
 			"Scroll window size: ",
@@ -441,11 +520,11 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ '"', &quote_optname,
+	{ '"', (struct optname *)&quote_optname,
 		STRING, 0, NULL, opt_quote,
 		{ "quotes: ", NULL, NULL }
 	},
-	{ '~', &tilde_optname,
+	{ '~', (struct optname *)&tilde_optname,
 		BOOL|REPAINT, OPT_ON, &twiddle, NULL,
 		{
 			"Don't show tildes after end of file",
@@ -453,11 +532,11 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ '?', &query_optname,
+	{ '?', (struct optname *)&query_optname,
 		NOVAR, 0, NULL, opt_query,
 		{ NULL, NULL, NULL }
 	},
-	{ '#', &pound_optname,
+	{ '#', (struct optname *)&pound_optname,
 		STRING, 0, NULL, opt_shift,
 		{
 			"Horizontal shift: ",
@@ -465,7 +544,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &keypad_optname,
+	{ OLETTER_NONE, (struct optname *)&keypad_optname,
 		BOOL|NO_TOGGLE, OPT_OFF, &no_keypad, NULL,
 		{
 			"Use keypad mode",
@@ -473,7 +552,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &oldbot_optname,
+	{ OLETTER_NONE, (struct optname *)&oldbot_optname,
 		BOOL, OPT_OFF, &oldbot, NULL,
 		{
 			"Use new bottom of screen behavior",
@@ -481,7 +560,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &follow_optname,
+	{ OLETTER_NONE, (struct optname *)&follow_optname,
 		BOOL, FOLLOW_DESC, &follow_mode, NULL,
 		{
 			"F command follows file descriptor",
@@ -489,7 +568,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &use_backslash_optname,
+	{ OLETTER_NONE, (struct optname *)&use_backslash_optname,
 		BOOL, OPT_OFF, &opt_use_backslash, NULL,
 		{
 			"Use backslash escaping in command line parameters",
@@ -497,11 +576,11 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &rscroll_optname,
+	{ OLETTER_NONE, (struct optname *)&rscroll_optname,
 		STRING|REPAINT|INIT_HANDLER, 0, NULL, opt_rscroll,
 		{ "right scroll character: ", NULL, NULL }
 	},
-	{ OLETTER_NONE, &nohistdups_optname,
+	{ OLETTER_NONE, (struct optname *)&nohistdups_optname,
 		BOOL, OPT_OFF, &no_hist_dups, NULL,
 		{
 			"Allow duplicates in history list",
@@ -509,7 +588,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &mousecap_optname,
+	{ OLETTER_NONE, (struct optname *)&mousecap_optname,
 		TRIPLE, OPT_OFF, &mousecap, opt_mousecap,
 		{
 			"Ignore mouse input",
@@ -517,7 +596,7 @@ static struct loption option[] =
 			"Use the mouse for scrolling (reverse)"
 		}
 	},
-	{ OLETTER_NONE, &wheel_lines_optname,
+	{ OLETTER_NONE, (struct optname *)&wheel_lines_optname,
 		NUMBER|INIT_HANDLER, 0, &wheel_lines, opt_wheel_lines,
 		{
 			"Lines to scroll on mouse wheel: ",
@@ -525,7 +604,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &perma_marks_optname,
+	{ OLETTER_NONE, (struct optname *)&perma_marks_optname,
 		BOOL, OPT_OFF, &perma_marks, NULL,
 		{
 			"Don't save marks in history file",
@@ -533,7 +612,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &linenum_width_optname,
+	{ OLETTER_NONE, (struct optname *)&linenum_width_optname,
 		NUMBER|REPAINT, MIN_LINENUM_WIDTH, &linenum_width, opt_linenum_width,
 		{
 			"Line number width: ",
@@ -541,7 +620,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &status_col_width_optname,
+	{ OLETTER_NONE, (struct optname *)&status_col_width_optname,
 		NUMBER|REPAINT, 2, &status_col_width, opt_status_col_width,
 		{
 			"Status column width: ",
@@ -549,7 +628,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &incr_search_optname,
+	{ OLETTER_NONE, (struct optname *)&incr_search_optname,
 		BOOL, OPT_OFF, &incr_search, NULL,
 		{
 			"Incremental search is off",
@@ -557,7 +636,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &use_color_optname,
+	{ OLETTER_NONE, (struct optname *)&use_color_optname,
 		BOOL|REPAINT, OPT_OFF, &use_color, NULL,
 		{
 			"Don't use color",
@@ -565,7 +644,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &want_filesize_optname,
+	{ OLETTER_NONE, (struct optname *)&want_filesize_optname,
 		BOOL|REPAINT, OPT_OFF, &want_filesize, opt_filesize,
 		{
 			"Don't get size of each file",
@@ -573,7 +652,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &status_line_optname,
+	{ OLETTER_NONE, (struct optname *)&status_line_optname,
 		BOOL|REPAINT, OPT_OFF, &status_line, NULL,
 		{
 			"Don't color each line with its status column color",
@@ -581,7 +660,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &header_optname,
+	{ OLETTER_NONE, (struct optname *)&header_optname,
 		STRING|REPAINT, 0, NULL, opt_header,
 		{
 			"Header lines: ",
@@ -589,7 +668,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &nonum_headers_optname,
+	{ OLETTER_NONE, (struct optname *)&nonum_headers_optname,
 		BOOL|REPAINT, 0, &nonum_headers, NULL,
 		{
 			"Number header lines",
@@ -597,7 +676,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &redraw_on_quit_optname,
+	{ OLETTER_NONE, (struct optname *)&redraw_on_quit_optname,
 		BOOL, OPT_OFF, &redraw_on_quit, NULL,
 		{
 			"Don't redraw screen when quitting",
@@ -605,7 +684,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &search_type_optname,
+	{ OLETTER_NONE, (struct optname *)&search_type_optname,
 		STRING, 0, NULL, opt_search_type,
 		{
 			"Search options: ",
@@ -614,7 +693,7 @@ static struct loption option[] =
 		}
 	},
 #if LESSTEST
-	{ OLETTER_NONE, &ttyin_name_optname,
+	{ OLETTER_NONE, (struct optname *)&ttyin_name_optname,
 		STRING|NO_TOGGLE, 0, NULL, opt_ttyin_name,
 		{
 			NULL,
@@ -622,7 +701,7 @@ static struct loption option[] =
 			NULL
 		}
 	},
-	{ OLETTER_NONE, &rstat_optname,
+	{ OLETTER_NONE, (struct optname *)&rstat_optname,
 		STRING|NO_TOGGLE, 0, NULL, opt_rstat,
 		{
 			NULL,
@@ -633,7 +712,11 @@ static struct loption option[] =
 #endif /*LESSTEST*/
 	{ '\0', NULL, NOVAR, 0, NULL, NULL, { NULL, NULL, NULL } }
 };
-
+#ifdef __VSF__
+	VSF_LINUX_ASSERT(dimof(less_opttbl_ctx->__option) >= dimof(__option));
+	memcpy(less_opttbl_ctx->__option, __option, sizeof(__option));
+}
+#endif
 
 /*
  * Initialize each option to its default value.
