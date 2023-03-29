@@ -233,10 +233,11 @@ struct __less_opttbl_ctx {
 	struct optname __q_optname;
 	struct loption __option[55];
 };
+static void __less_opttbl_init_option(struct __less_opttbl_ctx *ctx);
 define_vsf_less_mod(less_opttbl,
 	sizeof(struct __less_opttbl_ctx),
 	VSF_LESS_MOD_OPTTBL,
-	NULL
+	__less_opttbl_init_option
 )
 #	define less_opttbl_ctx		((struct __less_opttbl_ctx *)vsf_linux_dynlib_ctx(&vsf_less_mod_name(less_opttbl)))
 #	define option				(less_opttbl_ctx->__option)
