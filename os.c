@@ -56,8 +56,21 @@
 #define SET_JUMP        _setjmp
 #define LONG_JUMP       _longjmp
 #else
+#	ifdef __VSF__
+#		ifdef VSF_ARCH_SETJMP
+#define SET_JUMP        VSF_ARCH_SETJMP
+#		else
+#define SET_JUMP        setjmp
+#		endif
+#		ifdef VSF_ARCH_LONGJMP
+#define LONG_JUMP       VSF_ARCH_LONGJMP
+#		else
+#define LONG_JUMP       longjmp
+#		endif
+#	else
 #define SET_JUMP        setjmp
 #define LONG_JUMP       longjmp
+#endif
 #endif
 
 #ifdef __VSF__
